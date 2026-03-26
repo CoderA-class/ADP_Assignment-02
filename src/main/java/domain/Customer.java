@@ -20,12 +20,29 @@ public class Customer {
         this.address = builder.address;
     }
 
-    public String getCustID() { return custID; }
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getEmail() { return email; }
-    public String getPhoneNumber() { return phoneNumber; }
-    public String getAddress() { return address; }
+    public String getCustID() {
+        return custID;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
 
     @Override
     public String toString() {
@@ -42,8 +59,7 @@ public class Customer {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Customer)) return false;
-        Customer customer = (Customer) o;
+        if (!(o instanceof Customer customer)) return false;
         return Objects.equals(custID, customer.custID);
     }
 

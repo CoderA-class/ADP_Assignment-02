@@ -1,12 +1,42 @@
-package Domain;
+package domain;
 
 
 import Repositorie.OrderItemRepositoryImpl;
 import factory.OrderItemFactory;
 
+import static domain.Employee.EmpStatus.ACTIVE;
+
 public class main {
     public static void main(String[] args) {
 
+
+        Customer c1 = new Customer.Builder()
+                .setFirstName("Adriaan")
+                .setLastName("vdw")
+                .setAddress(" 22 Church Street")
+                .setCustID("C1102")
+                .setEmail("adriaanvdw@gmail.com")
+                .setPhoneNumber("0832361787")
+                .build();
+
+        System.out.println(c1);
+
+        Employee emp1 = new Employee.Builder()
+                .setFName("Rocco")
+                .setLName("Visagie")
+                .setEmpId("emp006")
+                .setRole("shelf stacker")
+                .setEmpStatus(ACTIVE)
+                .setEmail("roccovisagie@gmail.com")
+                .setSalary(20000.00)
+                .build();
+
+        Order o1 = new Order.Builder()
+                .setOrderId("ORD777")
+                .setCustomerId("C1102")
+                .setTotalAmount(234.00)
+                .addOrderItem(OrderItemFactory.createOrderItem("OI5000", "ORD777", "PROD100", 20, 4500.00))
+                .build();
 
 
         OrderItem orderItem = OrderItemFactory.createOrderItem(
@@ -16,6 +46,13 @@ public class main {
                 20,
                 4500.00
         );
+
+        Supplier s1 = new Supplier.SupplierBuilder()
+                .setName("Woolworths")
+                .setAddress("12 Pelecan Street")
+                .setEmail("WW@ww.co.za")
+                .setPhone("083 747 8291")
+                .build();
 
         System.out.println("\nCreated OrderItem:");
         System.out.println(orderItem);

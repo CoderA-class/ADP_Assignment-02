@@ -1,69 +1,80 @@
 package domain;
 
 public class Supplier {
-    private String supplierId;
-    private String name;
-    private String email;
-    private String phone;
-    private String address;
+    private final String supplierId;
+    private final String name;
+    private final String email;
+    private final String phone;
+    private final String address;
 
-    private Supplier(SupplierBuilder builder){
+    private Supplier(SupplierBuilder builder) {
         this.supplierId = builder.supplierId;
         this.name = builder.name;
         this.email = builder.email;
         this.phone = builder.phone;
         this.address = builder.address;
     }
-    public String getSupplierId(){
+
+    public String getSupplierId() {
         return supplierId;
     }
-    public String getName(){
+
+    public String getName() {
         return name;
     }
-    public String getEmail(){
+
+    public String getEmail() {
         return email;
     }
-    public String getPhone(){
+
+    public String getPhone() {
         return phone;
     }
-    public String getAddress(){
+
+    public String getAddress() {
         return address;
     }
 
-    public static class SupplierBuilder{
+    public static class SupplierBuilder {
         private String supplierId;
         private String name;
         private String email;
         private String phone;
         private String address;
 
-        public SupplierBuilder setSupplierId(String supplierId){
+        public SupplierBuilder setSupplierId(String supplierId) {
             this.supplierId = supplierId;
             return this;
         }
-        public SupplierBuilder setName(String name){
+
+        public SupplierBuilder setName(String name) {
             this.name = name;
             return this;
         }
-        public SupplierBuilder setEmail(String email){
+
+        public SupplierBuilder setEmail(String email) {
             this.email = email;
             return this;
         }
-        public SupplierBuilder setPhone(String phone){
+
+        public SupplierBuilder setPhone(String phone) {
             this.phone = phone;
             return this;
         }
-        public SupplierBuilder setAddress(String address){
+
+        public SupplierBuilder setAddress(String address) {
             this.address = address;
             return this;
         }
-        public Supplier build(){
+
+        public Supplier build() {
             return new Supplier(this);
         }
 
     }
+
     @Override
-    public String toString(){
+    public String toString() {
         return "Supplier{" +
                 "supplierId = '" + supplierId + '\'' +
                 ", name = '" + name + '\'' +

@@ -1,6 +1,6 @@
 package Repositorie;
 
-import Domain.OrderItem;
+import domain.OrderItem;
 
 public interface OrderItemRepository extends IRepository<OrderItem, String> {
 
