@@ -6,11 +6,11 @@ import java.util.List;
 
 public class Order {
 
-    private String orderId;
-    private String customerId;
-    private LocalDate orderDate;
-    private double totalAmount;
-    private List<OrderItem> orderItems;
+    private final String orderId;
+    private final String customerId;
+    private final LocalDate orderDate;
+    private final double totalAmount;
+    private final List<OrderItem> orderItems;
 
     private Order(Builder builder) {
         this.orderId = builder.orderId;
@@ -78,7 +78,7 @@ public class Order {
             return this;
         }
 
-        public Builder setOrderItems(List<OrderItem> orderItems) {
+        public Builder setOrderItems() {
             this.orderItems = orderItems;
             return this;
         }

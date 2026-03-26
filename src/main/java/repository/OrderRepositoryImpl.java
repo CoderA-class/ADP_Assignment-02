@@ -3,6 +3,7 @@ package repository;
 import domain.Order;
 import repository.OrderRepository;
 import repository.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.Map;
 public class OrderRepositoryImpl implements OrderRepository {
 
     private static OrderRepositoryImpl repository = null;
-    private Map<String, Order> orderTable;
+    private final Map<String, Order> orderTable;
 
     private OrderRepositoryImpl() {
         orderTable = new HashMap<>();

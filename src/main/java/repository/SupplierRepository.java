@@ -1,6 +1,6 @@
 package repository;
 
-import org.Domain.Supplier;
+import domain.Supplier;
 
 public interface SupplierRepository {
     Supplier create(Supplier supplier);

@@ -1,4 +1,7 @@
 package repository;
+
+import domain.Supplier;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,43 +10,51 @@ public class SupplierRepositoryImpl implements SupplierRepository {
     private static SupplierRepositoryImpl repository = null;
     private final List<Supplier> supplierTable;
 
-    private SupplierRepositoryImpl(){
+    private SupplierRepositoryImpl() {
         supplierTable = new ArrayList<>();
     }
 
-    public static SupplierRepositoryImpl getRepository(){
-        if(repository == null)
+    public static SupplierRepositoryImpl getRepository() {
+        if (repository == null)
             repository = new SupplierRepositoryImpl();
         return repository;
     }
 
     @Override
-    public Supplier create(Supplier supplier){
+    public Supplier create(Supplier supplier) {
         supplierTable.add(supplier);
         return supplier;
     }
+
     @Override
-    public Supplier read(String id){
-        for( Supplier supplier : supplierTable){
+    public Supplier read(String id) {
+        for (Supplier supplier : supplierTable) {
             if (supplier.getSupplierId().equals(id))
                 return supplier;
         }
         return null;
     }
+
     @Override
-    public Supplier update(Supplier supplier){
-        for (int i = 0; i < supplierTable.size(); i++);{
-            if (supplierTable.get(i).getSupplierId().equals(supplier.getSupplierId())){
-                supplierTable.set(i,supplier);
+    public Supplier update(Supplier supplier) {
+        return null;
+    }
+
+    public Supplier update(int index, Supplier supplier) {
+        for (int i = 0; i < supplierTable.size(); i++) ;
+        {
+            if (supplierTable.get(index).getSupplierId().equals(supplier.getSupplierId())) {
+                supplierTable.set(index, supplier);
                 return supplier;
             }
         }
         return null;
     }
+
     @Override
-    public Boolean delete(String id){
-        for (int i = 0; i < supplierTable.size(); i++){
-            if(supplierTable.get(i).getSupplierId().equals(id)){
+    public Boolean delete(String id) {
+        for (int i = 0; i < supplierTable.size(); i++) {
+            if (supplierTable.get(i).getSupplierId().equals(id)) {
                 supplierTable.remove(i);
                 return true;
             }

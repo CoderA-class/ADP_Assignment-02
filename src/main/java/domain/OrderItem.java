@@ -1,19 +1,19 @@
-package Domain;
-
-import java.lang.module.ModuleDescriptor;
+package domain;
 
 public class OrderItem {
-    private String orderItemId;
-    private String orderId;
-    private String productId;
-    private int quantity;
-    private double lineTotal;
+    private final String orderItemId;
+    private final String orderId;
+    private final String productId;
+    private final int quantity;
+
+    private final double lineTotal;
 
     private OrderItem(OrderItemBuilder builder) {
         this.orderItemId = builder.orderItemId;
         this.orderId = builder.orderId;
         this.productId = builder.productId;
         this.quantity = builder.quantity;
+
         this.lineTotal = builder.lineTotal;
     }
 
@@ -33,6 +33,7 @@ public class OrderItem {
         return quantity;
     }
 
+
     public double getLineTotal() {
         return lineTotal;
     }
@@ -41,6 +42,7 @@ public class OrderItem {
         private String orderItemId;
         private String orderId;
         private String productId;
+
         private int quantity;
         private double lineTotal;
 
@@ -68,6 +70,7 @@ public class OrderItem {
             this.lineTotal = lineTotal;
             return this;
         }
+
 
         public OrderItem build() {
             return new OrderItem(this);

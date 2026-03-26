@@ -8,12 +8,13 @@ package Repositorie;
         */
 
 
-import Domain.Product;
+import domain.Product;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductRepository {
-    private List<Product> products; // Simple in-memory storage
+    private final List<Product> products; // Simple in-memory storage
 
     public ProductRepository() {
         this.products = new ArrayList<>();
