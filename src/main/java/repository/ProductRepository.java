@@ -1,9 +1,9 @@
-package Repositorie;
+package repository;
 
 /*
-        SpazaShop Application
-        ProductRepository Class.java
-        Student: Isaac Tinotenda Ziyengwa(231269307)
+        ProductRepository.java
+        ProductRepository model class
+        Author: Isaac Tinotenda Ziyengwa(231269307)
         Date: March 2026
         */
 

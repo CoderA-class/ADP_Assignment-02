@@ -1,5 +1,12 @@
 package repository;
 
+/*
+  OrderRepositoryImpl.java
+  OrderRepositoryImpl model class
+  Author: Rocco Given Visagie (220343527)
+  Date: 23 March 2026
+ */
+
 import domain.Order;
 import repository.OrderRepository;
 import repository.*;

@@ -1,5 +1,12 @@
 package factory;
 
+/*
+  SupplierFactory.java
+  SupplierFactory model class
+  Author: Luke John Zyster (220489114)
+  Date: 25 March 2026
+ */
+
 import domain.Supplier;
 
 public class SupplierFactory {

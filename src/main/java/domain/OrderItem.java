@@ -1,5 +1,12 @@
 package domain;
 
+/*
+  OrderItem.java
+  OrderItem model class
+  Author: Adriaan van der Westhuizen (240436415)
+  Date: 26 March 2026
+ */
+
 public class OrderItem {
     private final String orderItemId;
     private final String orderId;

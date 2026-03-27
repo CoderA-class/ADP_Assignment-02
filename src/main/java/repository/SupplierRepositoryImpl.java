@@ -1,5 +1,12 @@
 package repository;
 
+/*
+  SupplierRepositoryImpl.java
+  SupplierRepositoryImpl model class
+  Author: Luke John Zyster (220489114)
+  Date: 25 March 2026
+ */
+
 import domain.Supplier;
 
 import java.util.ArrayList;
