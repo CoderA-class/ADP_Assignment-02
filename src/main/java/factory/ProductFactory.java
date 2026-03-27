@@ -1,10 +1,10 @@
 package factory;
 
 /*
-  SpazaShop Application
-  ProductFactory Class.java
-  Student: Isaac Tinotenda Ziyengwa(231269307)
-  Date: March 2026
+  ProductFactory.java
+  ProductFactory model class
+  Author: Isaac Tinotenda Ziyengwa(231269307)
+  Date: 26 March 2026
  */
 
 import domain.Product;

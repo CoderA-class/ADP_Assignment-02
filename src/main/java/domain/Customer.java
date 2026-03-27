@@ -1,5 +1,13 @@
 package domain;
 
+/*
+  Customer.java
+  Customer model class
+  Authorad: David Daniel Sepkitt(240046935)
+  Date: 19 March 2026
+ */
+
+
 import java.util.Objects;
 
 public class Customer {

@@ -1,5 +1,12 @@
 package domain;
 
+/*
+        Employee.java
+        Employee model class
+        Author: Robyn Dominique Stevens (222201789)
+        Date: 19 March 2026
+        */
+
 public class Employee {
 
     private final String empID;

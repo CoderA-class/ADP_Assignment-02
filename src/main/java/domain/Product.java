@@ -1,13 +1,10 @@
 package domain;
 
-
-
-
 /*
-  SpazaShop Application
-  Product Model Class.java
-  Student: Isaac Tinotenda Ziyengwa(231269307)
-  Date: March 2026
+  Product.java
+  Product model class
+  Author: Isaac Tinotenda Ziyengwa(231269307)
+  Date: 26 March 2026
  */
 
 

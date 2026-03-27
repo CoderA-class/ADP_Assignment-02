@@ -1,5 +1,12 @@
 package domain;
 
+/*
+  Supplier.java
+  Supplier model class
+  Author: Luke John Zyster(220489114)
+  Date: 25 March 2026
+ */
+
 public class Supplier {
     private final String supplierId;
     private final String name;
