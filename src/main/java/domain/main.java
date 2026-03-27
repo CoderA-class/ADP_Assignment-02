@@ -1,7 +1,11 @@
 package domain;
 
+/*
+  main.java
+  Author: Adriaan van der Westhuizen (240436415)
+  Date: 26 March 2026
+ */
 
-import Repositorie.OrderItemRepositoryImpl;
 import factory.OrderItemFactory;
 
 import static domain.Employee.EmpStatus.ACTIVE;
