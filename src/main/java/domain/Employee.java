@@ -1,4 +1,4 @@
-package domain;
+package Domain;
 
 public class Employee {
 
