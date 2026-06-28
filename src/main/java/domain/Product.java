@@ -1,3 +1,7 @@
+
+package Domain;
+
+
 /*
   Product.java
   Product model class
@@ -5,7 +9,7 @@
   Date: 26 March 2026
  */
 
-package Domain;
+
 
 public class Product {
     private String id;
@@ -41,11 +45,9 @@ public class Product {
     }
 
 
-
     public String getName() {
         return name;
     }
-
 
 
     public double getPrice() {
@@ -58,11 +60,9 @@ public class Product {
     }
 
 
-
     public String getCategory() {
         return category;
     }
-
 
 
     @Override

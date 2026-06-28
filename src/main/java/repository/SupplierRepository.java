@@ -1,6 +1,13 @@
 package repository;
 
-import org.Domain.Supplier;
+/*
+  SupplierRepository.java
+  SupplierRepository model class
+  Author: Luke John Zyster (220489114)
+  Date: 25 March 2026
+ */
+
+import domain.Supplier;
 
 public interface SupplierRepository {
     Supplier create(Supplier supplier);

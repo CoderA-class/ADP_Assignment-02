@@ -1,9 +1,15 @@
-package Repositorie;
+package repository;
 
-import Domain.OrderItem;
+/*
+        OrderItemRepositoryImpl.java
+        Author: Adriaan van der Westhuizen (240436415)
+        Date: 26 March 2026
+*/
 
+import domain.OrderItem;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class OrderItemRepositoryImpl implements OrderItemRepository {
 
@@ -27,7 +33,6 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
     }
 
 
-
     @Override
     public OrderItem read(String id) {
         return orderItemTable.get(id);
@@ -46,5 +51,10 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
     public boolean delete(String id) {
         OrderItem removed = orderItemTable.remove(id);
         return removed != null;
+    }
+
+    @Override
+    public Set<OrderItem> getAll() {
+        return Set.of();
     }
 }

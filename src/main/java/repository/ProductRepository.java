@@ -1,19 +1,20 @@
-package Repositorie;
+package repository;
 
 /*
-        SpazaShop Application
-        ProductRepository Class.java
-        Student: Isaac Tinotenda Ziyengwa(231269307)
+        ProductRepository.java
+        ProductRepository model class
+        Author: Isaac Tinotenda Ziyengwa(231269307)
         Date: March 2026
         */
 
 
-import Domain.Product;
+import domain.Product;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductRepository {
-    private List<Product> products; // Simple in-memory storage
+    private final List<Product> products; // Simple in-memory storage
 
     public ProductRepository() {
         this.products = new ArrayList<>();

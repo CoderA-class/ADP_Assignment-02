@@ -24,7 +24,6 @@ class ProductFactoryTest {
 
     @BeforeEach
     void setUp() {
-
         // Initialize test products
         product = ProductFactory.createProduct("P001", "Bread", 15.99, 50, "Bakery");
         grocery = ProductFactory.createGrocery("G001", "Rice", 89.99, 30);

@@ -1,5 +1,3 @@
-package factory;
-
 /*
   SpazaShop Application
   ProductFactory Class.java
@@ -7,7 +5,7 @@ package factory;
   Date: March 2026
  */
 
-
+package factory;
 
 import Domain.Product;
 
@@ -33,7 +31,7 @@ public class ProductFactory {
         return new Product(id, name, price, quantity, "Snacks");
     }
 
-
+    // Creating an airtime product
     public static Product createAirtime(String id, String network, double amount) {
         String name = network + " Airtime R" + amount;
         return new Product(id, name, amount, 9999, "Airtime");

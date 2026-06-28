@@ -1,13 +1,19 @@
-package Repositorie;
+package repository;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class OrderItemRepositoryImplTest {
+class IRepositoryTest {
 
-    @Test
-    void getRepository() {
+    @BeforeEach
+    void setUp() {
+    }
+
+    @AfterEach
+    void tearDown() {
     }
 
     @Test
@@ -24,5 +30,9 @@ class OrderItemRepositoryImplTest {
 
     @Test
     void delete() {
+    }
+
+    @Test
+    void getAll() {
     }
 }

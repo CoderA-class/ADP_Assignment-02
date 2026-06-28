@@ -1,9 +1,16 @@
 package factory;
 
+/*
+  SupplierFactory.java
+  SupplierFactory model class
+  Author: Luke John Zyster (220489114)
+  Date: 25 March 2026
+ */
+
 import domain.Supplier;
 
 public class SupplierFactory {
-    public static Supplier createSupplier (String supplierId, String name, String email, String phone, String address){
+    public static Supplier createSupplier(String supplierId, String name, String email, String phone, String address) {
         if (supplierId == null || supplierId.isEmpty())
             throw new IllegalArgumentException("supplierId is required");
 

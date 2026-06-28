@@ -1,6 +1,13 @@
 package factory;
 
-import Domain.OrderItem;
+/*
+  OrderItemFactory.java
+  OrderItemFactory model class
+  Author: Adriaan van der Westhuizen (240436415)
+  Date: 26 March 2026
+ */
+
+import domain.OrderItem;
 
 public class OrderItemFactory {
 
