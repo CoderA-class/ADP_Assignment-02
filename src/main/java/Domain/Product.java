@@ -1,14 +1,11 @@
-package Domain;
-
 /*
   Product.java
   Product model class
-  Author: Isaac Tinotenda Ziyengwa(231269307)
+  Author: Isaac Tinotenda Ziyengwa (231269307)
   Date: 26 March 2026
  */
 
-
-import java.lang.module.ModuleDescriptor;
+package Domain;
 
 public class Product {
     private String id;
@@ -16,6 +13,16 @@ public class Product {
     private double price;
     private int quantity;
     private String category;
+
+
+    public Product(String id, String name, double price, int quantity, String category) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.category = category;
+    }
+
 
     private Product(Builder builder) {
         this.id = builder.id;
@@ -29,45 +36,34 @@ public class Product {
     }
 
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getId() {
         return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+
 
     public String getName() {
         return name;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
 
-    public Double getPrice() {
+
+    public double getPrice() {
         return price;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
 
     public int getQuantity() {
         return quantity;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+
 
     public String getCategory() {
         return category;
     }
+
+
 
     @Override
     public String toString() {
@@ -80,6 +76,7 @@ public class Product {
                 '}';
     }
 
+    // Builder Pattern
     public static class Builder {
         private String id;
         private String name;
@@ -126,4 +123,3 @@ public class Product {
         }
     }
 }
-
