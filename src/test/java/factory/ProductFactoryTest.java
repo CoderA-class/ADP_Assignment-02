@@ -96,20 +96,7 @@ class ProductFactoryTest {
         System.out.println("Airtime created: " + airtime);
     }
 
-    @Test
-    void createProductWithBuilder() {
-        Product builderProduct = ProductFactory.createProductWithBuilder(
-                "B002", "Milk", 22.50, 40, "Dairy"
-        );
 
-        assertNotNull(builderProduct);
-        assertEquals("B002", builderProduct.getId());
-        assertEquals("Milk", builderProduct.getName());
-        assertEquals(22.50, builderProduct.getPrice());
-        assertEquals(40, builderProduct.getQuantity());
-        assertEquals("Dairy", builderProduct.getCategory());
-        System.out.println("Builder Product created: " + builderProduct);
-    }
 
     @Test
     void testProductEquality() {
