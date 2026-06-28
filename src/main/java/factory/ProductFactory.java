@@ -3,15 +3,17 @@ package factory;
 /*
   SpazaShop Application
   ProductFactory Class.java
-  Student: Isaac Tinotenda Ziyengwa(231269307)
+  Student: Isaac Tinotenda Ziyengwa (231269307)
   Date: March 2026
  */
+
+
 
 import Domain.Product;
 
 public class ProductFactory {
 
-    // Creating a product
+    // Creating a product with full details
     public static Product createProduct(String id, String name, double price, int quantity, String category) {
         return new Product(id, name, price, quantity, category);
     }
@@ -31,9 +33,20 @@ public class ProductFactory {
         return new Product(id, name, price, quantity, "Snacks");
     }
 
-    // Creating an airtime product
+
     public static Product createAirtime(String id, String network, double amount) {
         String name = network + " Airtime R" + amount;
         return new Product(id, name, amount, 9999, "Airtime");
+    }
+
+
+    public static Product createProductWithBuilder(String id, String name, double price, int quantity, String category) {
+        return new Product.Builder()
+                .setId(id)
+                .setName(name)
+                .setPrice(price)
+                .setQuantity(quantity)
+                .setCategory(category)
+                .build();
     }
 }
