@@ -8,7 +8,7 @@ package repository;
         */
 
 
-import domain.Product;
+import Domain.Product;
 
 import java.util.ArrayList;
 import java.util.List;

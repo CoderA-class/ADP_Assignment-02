@@ -1,34 +1,25 @@
-package za.ac.cput.adp_assignment02.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+package Domain;
+
 
 /*
-* Product.java
-* Product model class
-* Author: Isaac Tinotenda Ziyengwa (231269307)
-* Date: 26 March 2026
-*/
+  Product.java
+  Product model class
+  Author: Isaac Tinotenda Ziyengwa (231269307)
+  Date: 26 March 2026
+ */
 
-@Entity
-@Table(name = "product")
+
+
 public class Product {
-    @Id
-    @Column(name = "id")
     private String id;
-    @Column(nullable = false)
     private String name;
-    @Column(nullable = false)
     private double price;
-    @Column(nullable = false)
     private int quantity;
-    @Column(nullable = false)
     private String category;
 
-    protected Product() {
-    }
+
+
 
     private Product(Builder builder) {
         this.id = builder.id;
@@ -38,31 +29,47 @@ public class Product {
         this.category = builder.category;
     }
 
+    public Product() {
+    }
+
+
     public String getId() {
         return id;
     }
+
 
     public String getName() {
         return name;
     }
 
+
     public double getPrice() {
         return price;
     }
+
 
     public int getQuantity() {
         return quantity;
     }
 
+
     public String getCategory() {
         return category;
     }
 
+
     @Override
     public String toString() {
-        return "Product{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", price=" + price + ", quantity=" + quantity + ", category='" + category + '\'' + '}';
+        return "Product{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                ", category='" + category + '\'' +
+                '}';
     }
 
+    // Builder Pattern
     public static class Builder {
         private String id;
         private String name;
