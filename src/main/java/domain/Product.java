@@ -19,13 +19,6 @@ public class Product {
     private String category;
 
 
-    public Product(String id, String name, double price, int quantity, String category) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-        this.category = category;
-    }
 
 
     private Product(Builder builder) {
