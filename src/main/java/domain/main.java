@@ -1,4 +1,4 @@
-package domain;
+package Domain;
 
 /*
   main.java
@@ -6,9 +6,10 @@ package domain;
   Date: 26 March 2026
  */
 
+import Domain.Customer;
 import factory.OrderItemFactory;
 import repository.*;
-import static domain.Employee.EmpStatus.ACTIVE;
+import static Domain.Employee.EmpStatus.ACTIVE;
 
 public class main {
     public static void main(String[] args) {
