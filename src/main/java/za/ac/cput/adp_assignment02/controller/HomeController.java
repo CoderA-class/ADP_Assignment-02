@@ -8,12 +8,12 @@ Date: 10 August 2026
 */
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 
-@RestController
+@Controller
 public class HomeController {
     @GetMapping("/")
     public String home() {
-        return "ADP Assignment 02 Application is running";
+        return "forward:/index.html";
     }
 }
