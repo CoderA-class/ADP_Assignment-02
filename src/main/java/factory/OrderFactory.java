@@ -1,32 +1,28 @@
-package factory;
+package za.ac.cput.adp_assignment02.factory;
 
 /*
-  OrderFactory.java
-  OrderFactory model class
-  Author: Rocco Given Visagie (220343527)
-  Date: 23 March 2026
- */
+OrderFactory.java
+Order Factory class
+Author: Rocco Given Visagie (220343527)
+Date: 19 August 2026
+*/
 
-import domain.Order;
+
+
+import za.ac.cput.adp_assignment02.domain.Order;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 public class OrderFactory {
-
     public static Order createOrder(String customerId, LocalDate orderDate) {
-
         if (customerId == null || customerId.isEmpty()) {
-            return null; // basic validation for TDD
+            throw new IllegalArgumentException("customerId is required");
         }
-
+        if (orderDate == null) {
+            throw new IllegalArgumentException("orderDate is required");
+        }
         String orderId = UUID.randomUUID().toString();
-
-        return new Order.Builder()
-                .setOrderId(orderId)
-                .setCustomerId(customerId)
-                .setOrderDate(orderDate)
-                .setTotalAmount(0.0)
-                .build();
+        return new Order.Builder().setOrderId(orderId).setCustomerId(customerId).setOrderDate(orderDate).setTotalAmount(0.0).build();
     }
 }
