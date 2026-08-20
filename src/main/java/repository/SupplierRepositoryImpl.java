@@ -69,4 +69,3 @@ public class SupplierRepositoryImpl implements SupplierRepository {
         return false;
     }
 }
-

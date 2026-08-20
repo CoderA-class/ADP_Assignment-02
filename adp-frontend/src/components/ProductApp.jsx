@@ -1,4 +1,3 @@
-// src/components/ProductApp.jsx
 import { useEffect, useMemo, useState } from 'react';
 import {
     getProducts,
@@ -40,7 +39,6 @@ export default function ProductApp() {
         fetchProducts();
     }, []);
 
-    // Filter products by search term
     const filteredProducts = useMemo(() => {
         const term = search.trim().toLowerCase();
         if (!term) return products;
@@ -54,7 +52,6 @@ export default function ProductApp() {
         });
     }, [products, search]);
 
-    // Statistics
     const productStats = useMemo(() => {
         const total = products.length;
         const totalValue = products.reduce(
