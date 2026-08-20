@@ -7,7 +7,7 @@ package factory;
   Date: 26 March 2026
  */
 
-import Domain.Product;
+import domain.Product;
 
 public class ProductFactory {
 

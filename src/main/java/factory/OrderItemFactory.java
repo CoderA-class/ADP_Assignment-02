@@ -7,7 +7,7 @@ package factory;
   Date: 26 March 2026
  */
 
-import Domain.OrderItem;
+import domain.OrderItem;
 import domain.OrderItem;
 
 public class OrderItemFactory {

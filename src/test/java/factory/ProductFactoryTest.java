@@ -7,7 +7,7 @@
 
 package factory;
 
-import Domain.Product;
+import domain.Product;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
