@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public class OrderFactory {
-
     public static Order createOrder(String customerId, LocalDate orderDate) {
 
         if (customerId == null || customerId.isEmpty()) {
