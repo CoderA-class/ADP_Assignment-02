@@ -7,6 +7,13 @@ package Domain;
   Date: 23 March 2026
  */
 
+/*
+  Order.java
+  Order model class
+  Author: Rocco Given Visagie (220343527)
+  Date: 23 March 2026
+ */
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

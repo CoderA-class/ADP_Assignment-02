@@ -7,7 +7,7 @@ package service;
   Date: 26 March 2026
  */
 
-import Domain.Product;
+import domain.Product;
 import repository.ProductRepository;
 import factory.ProductFactory;
 

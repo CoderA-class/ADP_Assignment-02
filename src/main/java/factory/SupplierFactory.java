@@ -10,7 +10,7 @@ package factory;
 import domain.Supplier;
 
 public class SupplierFactory {
-    public static Supplier createSupplier (String supplierId, String name, String email, String phone, String address){
+    public static Supplier createSupplier(String supplierId, String name, String email, String phone, String address) {
         if (supplierId == null || supplierId.isEmpty())
             throw new IllegalArgumentException("supplierId is required");
 

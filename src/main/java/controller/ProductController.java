@@ -7,7 +7,7 @@ package controller;
   Date: 19 July 2026
  */
 
-import Domain.Product;
+import domain.Product;
 import service.IProductService;
 import service.ProductService;
 import org.springframework.web.bind.annotation.*;

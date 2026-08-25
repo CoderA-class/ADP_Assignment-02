@@ -7,7 +7,7 @@ package service;
   Date: 26 March 2026
  */
 
-import Domain.Product;
+import domain.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
