@@ -43,23 +43,21 @@ export default function ProductApp() {
         const term = search.trim().toLowerCase();
         if (!term) return products;
 
-        return products.filter((product) => {
-            return (
-                product.id.toLowerCase().includes(term) ||
-                product.name.toLowerCase().includes(term) ||
-                product.category.toLowerCase().includes(term)
-            );
-        });
+        return products.filter((product) =>
+            product.id.toLowerCase().includes(term) ||
+            product.name.toLowerCase().includes(term) ||
+            product.category.toLowerCase().includes(term)
+        );
     }, [products, search]);
 
     const productStats = useMemo(() => {
         const total = products.length;
-        const totalValue = products.reduce(
-            (sum, p) => sum + p.price * p.quantity,
-            0
-        );
-        const avgPrice = total ? products.reduce((s, p) => s + p.price, 0) / total : 0;
-        const categories = new Set(products.map((p) => p.category)).size;
+        const totalValue = products.reduce((sum, product) =>
+            sum + product.price * product.quantity, 0);
+        const avgPrice = total
+            ? products.reduce((sum, product) => sum + product.price, 0) / total
+            : 0;
+        const categories = new Set(products.map((product) => product.category)).size;
 
         return {
             total,
@@ -138,7 +136,7 @@ export default function ProductApp() {
                 <article className="stat-card">
                     <div className="stat-label">Total inventory value</div>
                     <div className="stat-value">R{productStats.totalValue}</div>
-                    <div className="stat-foot">Price × Quantity</div>
+                    <div className="stat-foot">Price x Quantity</div>
                 </article>
                 <article className="stat-card">
                     <div className="stat-label">Average price</div>
@@ -164,63 +162,31 @@ export default function ProductApp() {
                     <form onSubmit={handleSubmit} className="customer-form">
                         <label>
                             Product ID
-                            <input
-                                name="id"
-                                value={form.id}
-                                onChange={handleChange}
-                                placeholder="PROD-001"
-                                disabled={!!editingId}
-                                required
-                            />
+                            <input name="id" value={form.id} onChange={handleChange}
+                                placeholder="PROD-001" disabled={!!editingId} required />
                         </label>
                         <label>
                             Product name
-                            <input
-                                name="name"
-                                value={form.name}
-                                onChange={handleChange}
-                                placeholder="Wireless Mouse"
-                                required
-                            />
+                            <input name="name" value={form.name} onChange={handleChange}
+                                placeholder="Wireless Mouse" required />
                         </label>
                         <div className="two-column">
                             <label>
                                 Price (R)
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    name="price"
-                                    value={form.price}
-                                    onChange={handleChange}
-                                    placeholder="0.00"
-                                    min="0"
-                                    required
-                                />
+                                <input type="number" step="0.01" name="price" value={form.price}
+                                    onChange={handleChange} placeholder="0.00" min="0" required />
                             </label>
                             <label>
                                 Quantity
-                                <input
-                                    type="number"
-                                    name="quantity"
-                                    value={form.quantity}
-                                    onChange={handleChange}
-                                    placeholder="0"
-                                    min="0"
-                                    required
-                                />
+                                <input type="number" name="quantity" value={form.quantity}
+                                    onChange={handleChange} placeholder="0" min="0" required />
                             </label>
                         </div>
                         <label>
                             Category
-                            <input
-                                name="category"
-                                value={form.category}
-                                onChange={handleChange}
-                                placeholder="Electronics"
-                                required
-                            />
+                            <input name="category" value={form.category} onChange={handleChange}
+                                placeholder="Electronics" required />
                         </label>
-
                         <div className="button-row">
                             <button type="submit" className="primary-btn">
                                 {editingId ? 'Save Changes' : 'Add Product'}
@@ -232,7 +198,6 @@ export default function ProductApp() {
                             )}
                         </div>
                     </form>
-
                     {error && <p className="error-message">{error}</p>}
                 </section>
 
@@ -243,65 +208,32 @@ export default function ProductApp() {
                             <h2>Product list</h2>
                         </div>
                         <div className="search-box">
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search products"
-                                aria-label="Search products"
-                            />
+                            <input type="text" value={search} onChange={(event) => setSearch(event.target.value)}
+                                placeholder="Search products" aria-label="Search products" />
                         </div>
                     </div>
-
                     {loading ? (
                         <div className="loading-box">Loading products...</div>
                     ) : (
                         <div className="table-wrap">
                             <table>
                                 <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Qty</th>
-                                    <th>Category</th>
-                                    <th>Actions</th>
-                                </tr>
+                                    <tr><th>ID</th><th>Name</th><th>Price</th><th>Qty</th><th>Category</th><th>Actions</th></tr>
                                 </thead>
                                 <tbody>
-                                {filteredProducts.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="6" className="empty-state">
-                                            No matching products found.
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    filteredProducts.map((product) => (
+                                    {filteredProducts.length === 0 ? (
+                                        <tr><td colSpan="6" className="empty-state">No matching products found.</td></tr>
+                                    ) : filteredProducts.map((product) => (
                                         <tr key={product.id}>
-                                            <td>{product.id}</td>
-                                            <td>{product.name}</td>
-                                            <td>R{Number(product.price).toFixed(2)}</td>
-                                            <td>{product.quantity}</td>
+                                            <td>{product.id}</td><td>{product.name}</td>
+                                            <td>R{Number(product.price).toFixed(2)}</td><td>{product.quantity}</td>
                                             <td>{product.category}</td>
                                             <td className="action-cell">
-                                                <button
-                                                    type="button"
-                                                    className="secondary-btn"
-                                                    onClick={() => handleEdit(product)}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="danger-btn"
-                                                    onClick={() => handleDelete(product.id)}
-                                                >
-                                                    Delete
-                                                </button>
+                                                <button type="button" className="secondary-btn" onClick={() => handleEdit(product)}>Edit</button>
+                                                <button type="button" className="danger-btn" onClick={() => handleDelete(product.id)}>Delete</button>
                                             </td>
                                         </tr>
-                                    ))
-                                )}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>

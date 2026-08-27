@@ -5,6 +5,8 @@ import './styles.css';
 import CustomerApp from './components/CustomerApp';
 import OrderItem from './components/orderitem.jsx';
 import EmployeeApp from './components/EmployeeApp';
+import ProductApp from './components/ProductApp';
+import SupplierApp from './components/SupplierApp';
 
 function App() {
     return (
@@ -14,6 +16,8 @@ function App() {
                     <Link to="/" style={{ fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>Customers</Link>
                     <Link to="/employees" style={{ fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>Employees</Link>
                     <Link to="/order-items" style={{ fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>Order Items</Link>
+                    <Link to="/products" style={{ fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>Products</Link>
+                    <Link to="/suppliers" style={{ fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>Suppliers</Link>
                 </nav>
 
                 <div style={{ padding: '1rem' }}>
@@ -21,6 +25,8 @@ function App() {
                         <Route path="/" element={<CustomerApp />} />
                         <Route path="/employees" element={<EmployeeApp />} />
                         <Route path="/order-items" element={<OrderItem />} />
+                        <Route path="/products" element={<ProductApp />} />
+                        <Route path="/suppliers" element={<SupplierApp />} />
                     </Routes>
                 </div>
             </div>

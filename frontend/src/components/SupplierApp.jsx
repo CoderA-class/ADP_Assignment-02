@@ -4,7 +4,7 @@ import {
     createSupplier,
     updateSupplier,
     deleteSupplier
-} from '../src/main/java/Services/supplierServices';
+} from '../services/supplierService';
 
 const emptySupplier = {
     supplierId: '',
