@@ -1,45 +1,31 @@
-const BASE_URL = '/api/order-items';
+import { requestJson } from './api';
 
-async function handleResponse(response) {
-    if (!response.ok) {
-        const message = await response.text().catch(() => '');
-        throw new Error(message || `Request failed with status ${response.status}`);
-    }
-    if (response.status === 204) return null;
-    return response.json();
-}
+const BASE_URL = '/order-items';
 
 export async function getOrderItems() {
-    const response = await fetch(BASE_URL);
-    return handleResponse(response);
+    return requestJson(`${BASE_URL}/all`);
 }
 
 export async function getOrderItem(orderItemId) {
-    const response = await fetch(`${BASE_URL}/${orderItemId}`);
-    return handleResponse(response);
+    return requestJson(`${BASE_URL}/read/${orderItemId}`);
 }
 
 export async function createOrderItem(orderItem) {
-    const response = await fetch(BASE_URL, {
+    return requestJson(`${BASE_URL}/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderItem)
     });
-    return handleResponse(response);
 }
 
 export async function updateOrderItem(orderItem) {
-    const response = await fetch(`${BASE_URL}/${orderItem.orderItemId}`, {
+    return requestJson(`${BASE_URL}/update`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderItem)
     });
-    return handleResponse(response);
 }
 
 export async function deleteOrderItem(orderItemId) {
-    const response = await fetch(`${BASE_URL}/${orderItemId}`, {
+    return requestJson(`${BASE_URL}/delete/${orderItemId}`, {
         method: 'DELETE'
     });
-    return handleResponse(response);
 }

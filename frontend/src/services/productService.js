@@ -1,33 +1,27 @@
-const API_BASE = '/products';
+import { requestJson } from './api';
 
-export const getProducts = async () => {
-    const response = await fetch(`${API_BASE}/all`);
-    if (!response.ok) throw new Error('Failed to fetch products');
-    return response.json();
-};
+const API_BASE_URL = '/products';
 
-export const createProduct = async (product) => {
-    const response = await fetch(`${API_BASE}/create`, {
+export async function getProducts() {
+    return requestJson(`${API_BASE_URL}/all`);
+}
+
+export async function createProduct(product) {
+    return requestJson(`${API_BASE_URL}/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(product),
+        body: JSON.stringify(product)
     });
-    if (!response.ok) throw new Error('Failed to create product');
-    return response.json();
-};
+}
 
-export const updateProduct = async (product) => {
-    const response = await fetch(`${API_BASE}/update`, {
+export async function updateProduct(product) {
+    return requestJson(`${API_BASE_URL}/update`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(product),
+        body: JSON.stringify(product)
     });
-    if (!response.ok) throw new Error('Failed to update product');
-    return response.json();
-};
+}
 
-export const deleteProduct = async (id) => {
-    const response = await fetch(`${API_BASE}/delete/${id}`, { method: 'DELETE' });
-    if (!response.ok) throw new Error('Failed to delete product');
-    return response.json();
-};
+export async function deleteProduct(id) {
+    return requestJson(`${API_BASE_URL}/delete/${id}`, {
+        method: 'DELETE'
+    });
+}

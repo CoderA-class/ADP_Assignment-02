@@ -1,6 +1,4 @@
-
-package Domain;
-
+package za.ac.cput.adp_assignment02.domain;
 
 /*
   Product.java
@@ -9,17 +7,20 @@ package Domain;
   Date: 26 March 2026
  */
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-
+@Entity
+@Table(name = "products")
 public class Product {
+
+    @Id
     private String id;
     private String name;
     private double price;
     private int quantity;
     private String category;
-
-
-
 
     private Product(Builder builder) {
         this.id = builder.id;
