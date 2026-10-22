@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
   color: #0f172a;
   background: #eef4ff;
   line-height: 1.5;
@@ -16,6 +16,158 @@
   --danger: #ef4444;
   --shadow: 0 22px 60px rgba(15, 23, 42, 0.12);
 }
+
+.home-shell {
+  min-height: 100vh;
+  padding: 24px clamp(20px, 5vw, 76px) 28px;
+  color: var(--navy);
+  background: transparent;
+  overflow: hidden;
+}
+
+.home-nav,
+.home-footer,
+.module-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-nav {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--navy);
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+}
+
+.brand-mark-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-style: italic;
+  letter-spacing: 0;
+}
+
+.brand-mark-dot { color: var(--primary); }
+
+.home-nav-meta,
+.home-footer {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.home-nav-meta { display: flex; align-items: center; gap: 10px; }
+
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  align-items: center;
+  max-width: 1320px;
+  min-height: 430px;
+  margin: 0 auto;
+  gap: 30px;
+}
+
+.home-hero .eyebrow { color: var(--primary); }
+
+.hero-copy h1 {
+  max-width: 700px;
+  margin: 0;
+  font-size: clamp(2.3rem, 5vw, 4.4rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.hero-copy h1 em { color: var(--primary); font-style: normal; }
+
+.hero-description {
+  max-width: 430px;
+  margin: 28px 0 0;
+  color: var(--muted);
+  font-size: 1.04rem;
+}
+
+.hero-orbit {
+  position: relative;
+  width: min(32vw, 380px);
+  aspect-ratio: 1;
+  justify-self: end;
+}
+
+.orbit-ring {
+  position: absolute;
+  inset: 10%;
+  border: 1px solid rgba(79, 70, 229, 0.24);
+  border-radius: 50%;
+  transform: rotate(-28deg) scaleX(0.63);
+}
+
+.orbit-ring-one { border-style: dashed; }
+.orbit-ring-two { inset: 0; transform: rotate(55deg) scaleX(0.62); border-color: var(--primary); }
+
+.orbit-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-family: Georgia, serif;
+  font-size: 3.4rem;
+  font-style: italic;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 20px 50px rgba(79, 70, 229, 0.24);
+}
+
+.orbit-label { position: absolute; color: var(--muted); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.orbit-label-top { top: 13%; right: 2%; }
+.orbit-label-bottom { bottom: 14%; left: 4%; }
+
+.module-section { max-width: 1320px; margin: 0 auto; }
+.module-heading-row { align-items: end; margin-bottom: 20px; }
+.module-heading-row h2 { margin: 0; font-size: 1.65rem; font-weight: 800; }
+.module-count { margin: 0; color: var(--muted); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.module-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.module-card { position: relative; display: flex; min-height: 190px; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 20px; border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 18px; background: var(--panel); color: var(--navy); text-decoration: none; box-shadow: 0 12px 30px rgba(148, 163, 184, 0.12); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.module-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.module-card.lime { border-top: 4px solid var(--primary); }
+.module-card.blue { border-top: 4px solid #38bdf8; }
+.module-card.orange { border-top: 4px solid #f59e0b; }
+.module-card.pink { border-top: 4px solid #ec4899; }
+.module-card.violet { border-top: 4px solid #8b5cf6; }
+.module-card.teal { border-top: 4px solid var(--success); }
+.module-card-top { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.69rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
+.module-arrow { font-size: 1.2rem; }
+.module-card h3 { margin: 0 0 7px; font-size: 1.45rem; font-weight: 800; }
+.module-card p { max-width: 270px; margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.45; }
+.module-card-line { display: block; width: 34px; height: 3px; background: var(--primary); }
+.home-footer { max-width: 1320px; margin: 38px auto 0; padding-top: 16px; border-top: 1px solid var(--line); }
 
 * {
   box-sizing: border-box;
@@ -310,9 +462,21 @@ tbody tr:hover {
   .stats-grid {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
+
+  .module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 960px) {
+  .home-hero {
+    min-height: 360px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(3rem, 8vw, 5rem);
+  }
+
   .content-grid {
     grid-template-columns: 1fr;
   }
@@ -334,6 +498,52 @@ tbody tr:hover {
 }
 
 @media (max-width: 640px) {
+  .home-shell {
+    padding: 18px 16px 22px;
+  }
+
+  .home-nav-meta {
+    font-size: 0;
+  }
+
+  .home-hero {
+    display: block;
+    min-height: 0;
+    padding: 72px 0 84px;
+  }
+
+  .hero-orbit {
+    width: 230px;
+    margin: 62px auto 0;
+  }
+
+  .orbit-core {
+    width: 76px;
+    height: 76px;
+    font-size: 2.3rem;
+  }
+
+  .module-heading-row {
+    display: block;
+  }
+
+  .module-count {
+    margin-top: 12px;
+  }
+
+  .module-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .module-card {
+    min-height: 190px;
+  }
+
+  .home-footer {
+    display: block;
+    line-height: 2;
+  }
+
   .stats-grid,
   .two-column {
     grid-template-columns: 1fr;
