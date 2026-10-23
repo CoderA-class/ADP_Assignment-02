@@ -1,59 +1,27 @@
-package factory;
+package za.ac.cput.adp_assignment02.factory;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import za.ac.cput.adp_assignment02.domain.Employee;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EmployeeFactoryTest {
-
-    private EmployeeFactory factory;
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
-        factory = null;
-    }
-
     @Test
-    void createEmployee() {
-    }
+    void createsEmployeeWithActiveStatusAndUniqueId() {
+        Employee first = EmployeeFactory.createEmployee(
+                "Mia", "Dlamini", 42000.50, "mia@example.com", "0821234567", "Analyst");
+        Employee second = EmployeeFactory.createEmployee(
+                "Noah", "Nkosi", 39000.00, "noah@example.com", "0827654321", "Clerk");
 
-    @Test
-    void getEmpID() {
-    }
-
-    @Test
-    void getFName() {
-    }
-
-    @Test
-    void getLName() {
-    }
-
-    @Test
-    void getSalary() {
-    }
-
-    @Test
-    void getEmail() {
-    }
-
-    @Test
-    void getPhone() {
-    }
-
-    @Test
-    void getRole() {
-    }
-
-    @Test
-    void getEmpStatus() {
-    }
-
-    @Test
-    void testUniqueIDs() {
+        assertTrue(first.getEmpID().matches("EMP\\d{4}"));
+        assertNotEquals(first.getEmpID(), second.getEmpID());
+        assertEquals("Mia", first.getFName());
+        assertEquals("Dlamini", first.getLName());
+        assertEquals(42000.50, first.getSalary());
+        assertEquals("mia@example.com", first.getEmail());
+        assertEquals("0821234567", first.getPhone());
+        assertEquals("Analyst", first.getRole());
+        assertEquals(Employee.EmpStatus.ACTIVE, first.getEmpStatus());
     }
 }

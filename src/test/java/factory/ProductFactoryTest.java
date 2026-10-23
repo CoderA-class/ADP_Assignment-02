@@ -5,9 +5,9 @@
   Date: March 2026
  */
 
-package factory;
+package za.ac.cput.adp_assignment02.factory;
 
-import domain.Product;
+import za.ac.cput.adp_assignment02.domain.Product;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,9 +1,13 @@
 package za.ac.cput.adp_assignment02.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -24,16 +28,21 @@ public class Order {
     @Id
     @Column(name = "orderId")
     private String orderId;
-    @Column(nullable = false)
+        @Column(name = "customer_id", nullable = false)
     private String customerId;
+        @ManyToOne
+        @JoinColumn(name = "customer_id", insertable = false, updatable = false,
+            foreignKey = @ForeignKey(name = "fk_order_customer"))
+        @JsonIgnore
+        private Customer customer;
     @Column(nullable = false)
     private LocalDate orderDate;
     @Column(nullable = false)
     private double totalAmount;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>(); /* * Default constructor required by JPA. */
 
-    protected Order() {
+    public Order() {
     }
 
     private Order(Builder builder) {
@@ -48,20 +57,40 @@ public class Order {
         return orderId;
     }
 
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
     public String getCustomerId() {
         return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
     public LocalDate getOrderDate() {
         return orderDate;
     }
 
+    public void setOrderDate(LocalDate orderDate) {
+        this.orderDate = orderDate;
+    }
+
     public double getTotalAmount() {
         return totalAmount;
     }
 
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
     public List<OrderItem> getOrderItems() {
         return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 
     public double calculateTotal() {

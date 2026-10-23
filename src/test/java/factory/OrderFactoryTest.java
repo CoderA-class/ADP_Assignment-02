@@ -1,22 +1,20 @@
-package factory;
+package za.ac.cput.adp_assignment02.factory;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import za.ac.cput.adp_assignment02.domain.Order;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class OrderFactoryTest {
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
-
     @Test
-    void createOrder() {
+    void createsOrderWithGeneratedIdAndDate() {
+        LocalDate date = LocalDate.of(2026, 6, 21);
+        Order order = OrderFactory.createOrder("C-1", date);
+
+        assertNotNull(order.getOrderId());
+        assertEquals("C-1", order.getCustomerId());
+        assertEquals(date, order.getOrderDate());
+        assertEquals(0.0, order.getTotalAmount());
     }
 }

@@ -1,62 +1,18 @@
-package domain;
+package za.ac.cput.adp_assignment02.domain;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ProductTest {
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
-
     @Test
-    void setId() {
-    }
+    void builderCreatesProductWithAllFields() {
+        Product product = new Product.Builder().setId("P-1").setName("Milk")
+                .setPrice(18.50).setQuantity(12).setCategory("Dairy").build();
 
-    @Test
-    void getId() {
-    }
-
-    @Test
-    void setName() {
-    }
-
-    @Test
-    void getName() {
-    }
-
-    @Test
-    void setPrice() {
-    }
-
-    @Test
-    void getPrice() {
-    }
-
-    @Test
-    void setQuantity() {
-    }
-
-    @Test
-    void getQuantity() {
-    }
-
-    @Test
-    void setCategory() {
-    }
-
-    @Test
-    void getCategory() {
-    }
-
-    @Test
-    void testToString() {
+        assertEquals("P-1", product.getId());
+        assertEquals("Milk", product.getName());
+        assertEquals(18.50, product.getPrice());
+        assertEquals(12, product.getQuantity());
+        assertEquals("Dairy", product.getCategory());
     }
 }

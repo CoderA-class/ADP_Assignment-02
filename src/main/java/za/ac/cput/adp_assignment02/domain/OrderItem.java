@@ -1,8 +1,12 @@
 package za.ac.cput.adp_assignment02.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 /*
 * OrderItemService.java
@@ -17,16 +21,26 @@ public class OrderItem {
     @Id
     @Column(name = "orderItemId")
     private String orderItemId;
-    @Column(nullable = false)
+        @Column(name = "order_id", nullable = false)
     private String orderId;
-    @Column(nullable = false)
+        @ManyToOne
+        @JoinColumn(name = "order_id", insertable = false, updatable = false,
+            foreignKey = @ForeignKey(name = "fk_order_item_order"))
+        @JsonIgnore
+        private Order order;
+        @Column(name = "product_id", nullable = false)
     private String productId;
+        @ManyToOne
+        @JoinColumn(name = "product_id", insertable = false, updatable = false,
+            foreignKey = @ForeignKey(name = "fk_order_item_product"))
+        @JsonIgnore
+        private Product product;
     @Column(nullable = false)
     private int quantity;
     @Column(nullable = false)
     private double lineTotal;
 
-    protected OrderItem() {
+    public OrderItem() {
     }
 
     private OrderItem(OrderItemBuilder builder) {
@@ -41,20 +55,40 @@ public class OrderItem {
         return orderItemId;
     }
 
+    public void setOrderItemId(String orderItemId) {
+        this.orderItemId = orderItemId;
+    }
+
     public String getOrderId() {
         return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
     public String getProductId() {
         return productId;
     }
 
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
     public int getQuantity() {
         return quantity;
     }
 
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     public double getLineTotal() {
         return lineTotal;
+    }
+
+    public void setLineTotal(double lineTotal) {
+        this.lineTotal = lineTotal;
     }
 
     public static class OrderItemBuilder {
