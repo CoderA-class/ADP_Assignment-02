@@ -17,6 +17,12 @@ const emptyEmployee = {
     empStatus: 'ACTIVE'
 };
 
+const zarFormatter = new Intl.NumberFormat('en-ZA', {
+    style: 'currency',
+    currency: 'ZAR',
+    minimumFractionDigits: 2
+});
+
 export default function EmployeeApp() {
     const [employees, setEmployees] = useState([]);
     const [form, setForm] = useState(emptyEmployee);
@@ -83,6 +89,7 @@ export default function EmployeeApp() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setError('');
 
         try {
             // Ensure numeric formatting for salary if required by backend
@@ -223,10 +230,11 @@ export default function EmployeeApp() {
                         </label>
                         <div className="two-column">
                             <label>
-                                Salary ($)
+                                Salary (R)
                                 <input
                                     type="number"
                                     step="0.01"
+                                    min="0"
                                     name="salary"
                                     value={form.salary}
                                     onChange={handleChange}
@@ -318,7 +326,7 @@ export default function EmployeeApp() {
                                             <td>{employee.empID}</td>
                                             <td>{`${employee.fName} ${employee.lName}`}</td>
                                             <td>{employee.role}</td>
-                                            <td>${Number(employee.salary).toLocaleString()}</td>
+                                            <td>{zarFormatter.format(Number(employee.salary) || 0)}</td>
                                             <td>
                           <span style={{
                               padding: '4px 8px',

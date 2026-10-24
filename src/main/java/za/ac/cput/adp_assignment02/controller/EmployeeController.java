@@ -9,6 +9,7 @@ Date: 10 August 2026
 
 
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import za.ac.cput.adp_assignment02.domain.Employee;
 import za.ac.cput.adp_assignment02.service.EmployeeService;
 
@@ -26,7 +27,7 @@ public class EmployeeController {
     }
 
     @PostMapping("/create")
-    public Employee create(@RequestBody Employee employee) {
+    public Employee create(@Valid @RequestBody Employee employee) {
         return employeeService.create(employee);
     }
 
@@ -36,7 +37,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/update")
-    public Employee update(@RequestBody Employee employee) {
+    public Employee update(@Valid @RequestBody Employee employee) {
         return employeeService.update(employee);
     }
 

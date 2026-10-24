@@ -1,42 +1,19 @@
-package domain;
+package za.ac.cput.adp_assignment02.domain;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SupplierTest {
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
-
     @Test
-    void getSupplierId() {
-    }
+    void builderCreatesSupplierWithAllFields() {
+        Supplier supplier = new Supplier.SupplierBuilder().setSupplierId("S-1")
+                .setName("Cape Produce").setEmail("orders@example.com")
+                .setPhone("0211234567").setAddress("Cape Town").build();
 
-    @Test
-    void getName() {
-    }
-
-    @Test
-    void getEmail() {
-    }
-
-    @Test
-    void getPhone() {
-    }
-
-    @Test
-    void getAddress() {
-    }
-
-    @Test
-    void testToString() {
+        assertEquals("S-1", supplier.getSupplierId());
+        assertEquals("Cape Produce", supplier.getName());
+        assertEquals("orders@example.com", supplier.getEmail());
+        assertEquals("0211234567", supplier.getPhone());
+        assertEquals("Cape Town", supplier.getAddress());
     }
 }

@@ -1,11 +1,15 @@
 package za.ac.cput.adp_assignment02.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.util.Objects;
 /* * Employee.java
@@ -18,24 +22,34 @@ import java.util.Objects;
 public class Employee {
     @Id
     @Column(name = "empID")
+    @NotBlank
     private String empID;
+    @NotBlank
     @Column(nullable = false)
+    @JsonProperty("fName")
     private String fName;
+    @NotBlank
     @Column(nullable = false)
+    @JsonProperty("lName")
     private String lName;
+    @PositiveOrZero
     @Column(nullable = false)
     private double salary;
+    @NotBlank
     @Column(nullable = false)
     private String email;
+    @NotBlank
     @Column(nullable = false)
     private String phone;
+    @NotBlank
     @Column(nullable = false)
     private String role;
     @Enumerated(EnumType.STRING)
+    @NotNull
     @Column(nullable = false)
     private EmpStatus empStatus;
 
-    protected Employee() {
+    public Employee() {
     }
 
     private Employee(Builder builder) {
@@ -55,32 +69,64 @@ public class Employee {
         return empID;
     }
 
+    public void setEmpID(String empID) {
+        this.empID = empID;
+    }
+
     public String getFName() {
         return fName;
+    }
+
+    public void setFName(String fName) {
+        this.fName = fName;
     }
 
     public String getLName() {
         return lName;
     }
 
+    public void setLName(String lName) {
+        this.lName = lName;
+    }
+
     public double getSalary() {
         return salary;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
     }
 
     public String getEmail() {
         return email;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getPhone() {
         return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getRole() {
         return role;
     }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     public EmpStatus getEmpStatus() {
         return empStatus;
+    }
+
+    public void setEmpStatus(EmpStatus empStatus) {
+        this.empStatus = empStatus;
     }
 
     @Override

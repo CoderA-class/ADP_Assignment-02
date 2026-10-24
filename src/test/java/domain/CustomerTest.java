@@ -1,54 +1,27 @@
-package domain;
+package za.ac.cput.adp_assignment02.domain;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CustomerTest {
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
-
     @Test
-    void getCustID() {
-    }
+    void builderCreatesCustomerWithAllFields() {
+        Customer customer = new Customer.Builder()
+                .setCustID("C-1")
+                .setFirstName("Ava")
+                .setLastName("Mokoena")
+                .setEmail("ava@example.com")
+                .setPhoneNumber("0821234567")
+                .setAddress("Cape Town")
+                .build();
 
-    @Test
-    void getFirstName() {
-    }
-
-    @Test
-    void getLastName() {
-    }
-
-    @Test
-    void getEmail() {
-    }
-
-    @Test
-    void getPhoneNumber() {
-    }
-
-    @Test
-    void getAddress() {
-    }
-
-    @Test
-    void testToString() {
-    }
-
-    @Test
-    void testEquals() {
-    }
-
-    @Test
-    void testHashCode() {
+        assertNotNull(customer);
+        assertEquals("C-1", customer.getCustID());
+        assertEquals("Ava", customer.getFirstName());
+        assertEquals("Mokoena", customer.getLastName());
+        assertEquals("ava@example.com", customer.getEmail());
+        assertEquals("0821234567", customer.getPhoneNumber());
+        assertEquals("Cape Town", customer.getAddress());
     }
 }
