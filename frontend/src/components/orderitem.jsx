@@ -5,17 +5,26 @@ import {
     updateOrderItem,
     deleteOrderItem
 } from '../services/orderItemService';
+import { getOrders } from '../services/orderService';
+import { getProducts } from '../services/productService';
+import { getCustomers } from '../services/customerService';
 
 const emptyOrderItem = {
     orderItemId: '',
     orderId: '',
     productId: '',
+    productName: '',
+    customerId: '',
+    customerName: '',
     quantity: '',
     lineTotal: ''
 };
 
 export default function OrderItem() {
     const [orderItems, setOrderItems] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [customers, setCustomers] = useState([]);
     const [form, setForm] = useState(emptyOrderItem);
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -37,6 +46,13 @@ export default function OrderItem() {
 
     useEffect(() => {
         fetchOrderItems();
+        Promise.all([getOrders(), getProducts(), getCustomers()])
+            .then(([orderData, productData, customerData]) => {
+                setOrders(orderData);
+                setProducts(productData);
+                setCustomers(customerData);
+            })
+            .catch(() => setError('Unable to load products, customers, or orders for sales entry.'));
     }, []);
 
     const filteredOrderItems = useMemo(() => {
@@ -68,7 +84,39 @@ export default function OrderItem() {
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        setForm((current) => ({ ...current, [name]: value }));
+        setForm((current) => {
+            const next = { ...current, [name]: value };
+            if (name === 'productName') {
+                const product = products.find((item) =>
+                    item.id.toLowerCase() === value.trim().toLowerCase() ||
+                    item.name.toLowerCase() === value.trim().toLowerCase()
+                );
+                next.productId = product ? product.id : '';
+                next.lineTotal = product && current.quantity
+                    ? (product.price * Number(current.quantity)).toFixed(2)
+                    : '';
+            }
+            if (name === 'quantity' && current.productId) {
+                const product = products.find((item) => item.id === current.productId);
+                next.lineTotal = product && value ? (product.price * Number(value)).toFixed(2) : '';
+            }
+            if (name === 'customerName') {
+                const customer = customers.find((item) => {
+                    const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
+                    return fullName === value.trim().toLowerCase() ||
+                        item.email.toLowerCase() === value.trim().toLowerCase();
+                });
+                next.customerId = customer ? customer.custID : '';
+                next.customerName = customer ? `${customer.firstName} ${customer.lastName}` : value;
+                const customerOrders = customer
+                    ? orders.filter((order) => order.customerId === customer.custID)
+                    : [];
+                if (customerOrders.length === 1) {
+                    next.orderId = customerOrders[0].orderId;
+                }
+            }
+            return next;
+        });
     };
 
     const resetForm = () => {
@@ -79,8 +127,15 @@ export default function OrderItem() {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        if (!form.productId || !form.customerId) {
+            setError('Choose a customer and a listed item name or barcode before saving.');
+            return;
+        }
+
         const payload = {
-            ...form,
+            orderItemId: form.orderItemId,
+            orderId: form.orderId,
+            productId: form.productId,
             quantity: Number(form.quantity),
             lineTotal: Number(form.lineTotal)
         };
@@ -100,7 +155,15 @@ export default function OrderItem() {
     };
 
     const handleEdit = (item) => {
-        setForm(item);
+        const product = products.find((candidate) => candidate.id === item.productId);
+        const order = orders.find((candidate) => candidate.orderId === item.orderId);
+        const customer = order && customers.find((candidate) => candidate.custID === order.customerId);
+        setForm({
+            ...item,
+            productName: product ? product.name : item.productId,
+            customerId: customer ? customer.custID : '',
+            customerName: customer ? `${customer.firstName} ${customer.lastName}` : ''
+        });
         setEditingId(item.orderItemId);
     };
 
@@ -162,39 +225,63 @@ export default function OrderItem() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="orderitem-form">
-                        <label>
-                            Order Item ID
-                            <input
-                                name="orderItemId"
-                                value={form.orderItemId}
-                                onChange={handleChange}
-                                placeholder="OI-001"
-                                disabled={!!editingId}
-                                required
-                            />
-                        </label>
+                        {!editingId && <p className="form-hint">The line ID is generated automatically.</p>}
                         <div className="two-column">
                             <label>
-                                Order ID
+                                Customer
                                 <input
+                                    name="customerName"
+                                    value={form.customerName}
+                                    onChange={handleChange}
+                                    list="customer-options"
+                                    placeholder="Type a customer name or email"
+                                    required
+                                />
+                                <datalist id="customer-options">
+                                    {customers.map((customer) => (
+                                        <option key={customer.custID} value={`${customer.firstName} ${customer.lastName}`}>
+                                            {customer.email}
+                                        </option>
+                                    ))}
+                                </datalist>
+                            </label>
+                            <label>
+                                Order
+                                <select
                                     name="orderId"
                                     value={form.orderId}
                                     onChange={handleChange}
-                                    placeholder="ORD-001"
                                     required
-                                />
-                            </label>
-                            <label>
-                                Product ID
-                                <input
-                                    name="productId"
-                                    value={form.productId}
-                                    onChange={handleChange}
-                                    placeholder="PROD-001"
-                                    required
-                                />
+                                >
+                                    <option value="">Choose an order</option>
+                                    {orders
+                                        .filter((order) => !form.customerId || order.customerId === form.customerId)
+                                        .map((order) => (
+                                        <option key={order.orderId} value={order.orderId}>
+                                            {order.orderId} - {order.orderDate}
+                                        </option>
+                                        ))}
+                                </select>
                             </label>
                         </div>
+                        {form.customerId && <p className="field-note">Matched customer: {form.customerId}</p>}
+                        <label>
+                            Item name or barcode
+                            <input
+                                name="productName"
+                                value={form.productName}
+                                onChange={handleChange}
+                                list="product-options"
+                                placeholder="Type an item name, or scan its barcode"
+                                required
+                            />
+                            <datalist id="product-options">
+                                {products.map((product) => (
+                                    <option key={product.id} value={product.name}>{product.id}</option>
+                                ))}
+                            </datalist>
+                            {form.productId && <span className="field-note">Matched item barcode: {form.productId}</span>}
+                        </label>
                         <div className="two-column">
                             <label>
                                 Quantity
@@ -209,7 +296,7 @@ export default function OrderItem() {
                                 />
                             </label>
                             <label>
-                                Line total
+                                Line total (calculated)
                                 <input
                                     type="number"
                                     step="0.01"
@@ -218,6 +305,7 @@ export default function OrderItem() {
                                     onChange={handleChange}
                                     placeholder="0.00"
                                     min="0"
+                                    readOnly
                                     required
                                 />
                             </label>

@@ -48,6 +48,10 @@ public class Order {
         return orderId;
     }
 
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
     public String getCustomerId() {
         return customerId;
     }

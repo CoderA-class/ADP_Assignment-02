@@ -160,11 +160,7 @@ export default function ProductApp() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="customer-form">
-                        <label>
-                            Product ID
-                            <input name="id" value={form.id} onChange={handleChange}
-                                placeholder="PROD-001" disabled={!!editingId} required />
-                        </label>
+                        {!editingId && <p className="form-hint">An item barcode will be generated automatically when you save.</p>}
                         <label>
                             Product name
                             <input name="name" value={form.name} onChange={handleChange}

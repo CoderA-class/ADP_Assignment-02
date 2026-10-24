@@ -5,6 +5,7 @@ import {
     updateOrder,
     deleteOrder
 } from '../services/orderService';
+import { getCustomers } from '../services/customerService';
 
 const emptyOrder = {
     orderId: '',
@@ -15,6 +16,7 @@ const emptyOrder = {
 
 export default function OrderApp() {
     const [orders, setOrders] = useState([]);
+    const [customers, setCustomers] = useState([]);
     const [form, setForm] = useState(emptyOrder);
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,6 +38,7 @@ export default function OrderApp() {
 
     useEffect(() => {
         fetchOrders();
+        getCustomers().then(setCustomers).catch(() => setError('Unable to load customers for order entry.'));
     }, []);
 
     const filteredOrders = useMemo(() => {
@@ -164,19 +167,22 @@ export default function OrderApp() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="order-form">
+                        {!editingId && <p className="form-hint">The order ID will be generated automatically.</p>}
                         <label>
-                            Order ID
-                            <input
-                                name="orderId"
-                                value={form.orderId}
+                            Customer
+                            <select
+                                name="customerId"
+                                value={form.customerId}
                                 onChange={handleChange}
-                                placeholder="ORD-001"
-                                disabled={!!editingId}
                                 required
-                            />
-                        </label>
-                        <label>
-                            Customer ID
+                            >
+                                <option value="">Choose a customer</option>
+                                {customers.map((customer) => (
+                                    <option key={customer.custID} value={customer.custID}>
+                                        {customer.firstName} {customer.lastName} ({customer.email})
+                                    </option>
+                                ))}
+                            </select>
                             <input
                                 name="customerId"
                                 value={form.customerId}

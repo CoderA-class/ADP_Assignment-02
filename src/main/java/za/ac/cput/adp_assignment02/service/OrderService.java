@@ -11,6 +11,7 @@ Date: 10 August 2026
 import org.springframework.stereotype.Service;
 import za.ac.cput.adp_assignment02.domain.Order;
 import za.ac.cput.adp_assignment02.repository.OrderRepository;
+import za.ac.cput.adp_assignment02.util.IdGenerator;
 
 
 import java.util.List;
@@ -25,6 +26,9 @@ public class OrderService implements IOrderService {
 
     @Override
     public Order create(Order order) {
+        if (order.getOrderId() == null || order.getOrderId().isBlank()) {
+            order.setOrderId(IdGenerator.generate("ORD"));
+        }
         return repository.save(order);
     }
 

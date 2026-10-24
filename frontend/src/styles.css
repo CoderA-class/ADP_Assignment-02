@@ -191,8 +191,32 @@ button, input {
   font: inherit;
 }
 
-input {
+input,
+select {
   color: var(--navy);
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  padding: 11px 12px;
+}
+
+.form-hint,
+.field-note {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.form-hint {
+  margin: -4px 0 4px;
+}
+
+.field-note {
+  display: block;
+  margin-top: 5px;
 }
 
 .page-shell {

@@ -41,6 +41,10 @@ public class OrderItem {
         return orderItemId;
     }
 
+    public void setOrderItemId(String orderItemId) {
+        this.orderItemId = orderItemId;
+    }
+
     public String getOrderId() {
         return orderId;
     }

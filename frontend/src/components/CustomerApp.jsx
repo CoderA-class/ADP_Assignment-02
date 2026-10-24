@@ -158,16 +158,7 @@ export default function CustomerApp() {
           </div>
 
           <form onSubmit={handleSubmit} className="customer-form">
-            <label>
-              Customer ID
-              <input
-                name="custID"
-                value={form.custID}
-                onChange={handleChange}
-                placeholder="CUST-001"
-                required
-              />
-            </label>
+            {!editingId && <p className="form-hint">A customer ID will be generated automatically when you save.</p>}
             <div className="two-column">
               <label>
                 First name

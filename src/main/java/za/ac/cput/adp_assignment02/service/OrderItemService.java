@@ -11,6 +11,7 @@ Date: 10 August 2026
 import org.springframework.stereotype.Service;
 import za.ac.cput.adp_assignment02.domain.OrderItem;
 import za.ac.cput.adp_assignment02.repository.OrderItemRepository;
+import za.ac.cput.adp_assignment02.util.IdGenerator;
 
 
 import java.util.List;
@@ -25,6 +26,9 @@ public class OrderItemService implements IOrderItemService {
 
     @Override
     public OrderItem create(OrderItem orderItem) {
+        if (orderItem.getOrderItemId() == null || orderItem.getOrderItemId().isBlank()) {
+            orderItem.setOrderItemId(IdGenerator.generate("LINE"));
+        }
         return repository.save(orderItem);
     }
 

@@ -11,6 +11,7 @@ Date: 10 August 2026
 import org.springframework.stereotype.Service;
 import za.ac.cput.adp_assignment02.domain.Customer;
 import za.ac.cput.adp_assignment02.repository.CustomerRepository;
+import za.ac.cput.adp_assignment02.util.IdGenerator;
 
 
 import java.util.List;
@@ -25,6 +26,9 @@ public class CustomerService implements ICustomerService {
 
     @Override
     public Customer create(Customer customer) {
+        if (customer.getCustID() == null || customer.getCustID().isBlank()) {
+            customer.setCustID(IdGenerator.generate("CUST"));
+        }
         return repository.save(customer);
     }
 

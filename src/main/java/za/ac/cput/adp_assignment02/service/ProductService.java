@@ -11,6 +11,7 @@ Date: 10 August 2026
 import org.springframework.stereotype.Service;
 import za.ac.cput.adp_assignment02.domain.Product;
 import za.ac.cput.adp_assignment02.repository.ProductRepository;
+import za.ac.cput.adp_assignment02.util.IdGenerator;
 
 
 import java.util.List;
@@ -25,6 +26,9 @@ public class ProductService implements IProductService {
 
     @Override
     public Product create(Product product) {
+        if (product.getId() == null || product.getId().isBlank()) {
+            product.setId(IdGenerator.generate("ITEM"));
+        }
         return repository.save(product);
     }
 
