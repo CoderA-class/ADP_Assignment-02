@@ -4,6 +4,7 @@ import Icon from './Icons';
 import { StickyNote } from './ui';
 
 const COLORS = ['yellow', 'pink', 'mint', 'sky', 'peach', 'lilac'];
+const TILTS = [-2.5, 2, -1.5, 3, -2, 1.5];
 const storageKey = (userId) => `stockflow.notes.${userId || 'me'}`;
 
 function loadNotes(userId) {
@@ -25,13 +26,13 @@ export default function NoticeBoard({ userId, autoNotes = [] }) {
   return (
     <div className="sticky-board">
       {autoNotes.map((a, i) => (
-        <StickyNote key={a.key} color={a.color} tilt={0} icon={a.icon} title={a.title}
+        <StickyNote key={a.key} color={a.color} tilt={TILTS[i % TILTS.length]} pinned icon={a.icon} title={a.title}
           foot={a.link && <Link to={a.link} state={a.state}>{a.linkLabel || 'Open'} <Icon name="arrowRight" size={11} /></Link>}>
           <p>{a.text}</p>
         </StickyNote>
       ))}
       {notes.map((n, i) => (
-        <StickyNote key={n.id} color={n.color} tilt={0}
+        <StickyNote key={n.id} color={n.color} tilt={TILTS[(i + autoNotes.length) % TILTS.length]}
           foot={<>
             <span className="color-dots">
               {COLORS.map((c) => (
