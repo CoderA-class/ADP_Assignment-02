@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Icon from '../components/Icons';
-import { BarChart, Donut, Sparkline } from '../components/Charts';
-import { Avatar, Badge, EmptyState, ErrorState, Loading, StatCard, TrendChip } from '../components/ui';
+import { BarChart, Donut } from '../components/Charts';
+import { Avatar, Badge, EmptyState, ErrorState, Loading, StatCard } from '../components/ui';
+import NoticeBoard from '../components/NoticeBoard';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
 import { api } from '../services/api';
-import { categoryColor, PALETTE, colorFor, daysSince, formatDate, fullName, money, number, stockStatus, toDate } from '../utils/format';
+import { categoryColor, categoryIcon, colorFor, daysSince, formatDate, fullName, money, number, stockStatus, toDate } from '../utils/format';
 
 export default function Dashboard() {
   const { user, isAdmin } = useAuth();
-  const navigate = useNavigate();
-  const { data, loading, error, reload } = useApi(async () => {
+    const { data, loading, error, reload } = useApi(async () => {
     const [products, customers, orders, leave, employees] = await Promise.all([
       api.products.all(), api.customers.all(), api.orders.all(),
       isAdmin ? api.leave.all() : api.leave.forEmployee(user.empID),
@@ -83,43 +83,53 @@ export default function Dashboard() {
   if (error) return <ErrorState error={error} onRetry={reload} />;
 
   const pendingLeave = data.leave.filter((l) => l.status === 'PENDING');
+  const autoNotes = [];
+  if (stats.low.length) autoNotes.push({ key: 'low', color: 'peach', icon: 'alert', title: 'Restock soon', text: `${stats.low.slice(0, 3).map((p) => p.name).join(', ')}${stats.low.length > 3 ? ` and ${stats.low.length - 3} more` : ''} ${stats.low.length === 1 ? 'is' : 'are'} at or below the re-order level.`, link: '/products', state: { filter: 'low' }, linkLabel: 'Restock list' });
+  if (isAdmin && pendingLeave.length) autoNotes.push({ key: 'leave', color: 'mint', icon: 'calendar', title: 'Leave to approve', text: `${pendingLeave.length} request${pendingLeave.length === 1 ? '' : 's'} from ${[...new Set(pendingLeave.map((l) => l.employeeName))].slice(0, 2).join(' & ')}.`, link: '/leave', linkLabel: 'Review' });
+  if (!isAdmin && pendingLeave.length) autoNotes.push({ key: 'myleave', color: 'mint', icon: 'calendar', title: 'Leave pending', text: `You have ${pendingLeave.length} leave request${pendingLeave.length === 1 ? '' : 's'} waiting for approval.`, link: '/leave', linkLabel: 'View' });
+  if (stats.inactive.length) autoNotes.push({ key: 'inactive', color: 'lilac', icon: 'phone', title: 'Give them a call', text: `${stats.inactive.length} customer${stats.inactive.length === 1 ? " hasn't" : "s haven't"} bought anything in over 30 days.`, link: '/customers', linkLabel: 'Customers' });
+  if (!autoNotes.length) autoNotes.push({ key: 'ok', color: 'sky', icon: 'smile', title: 'All clear', text: 'No stock, leave or customer alerts right now. Nice work!' });
   const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
     <div className="stack" style={{ gap: 20 }}>
-      <section className="hero">
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div className="hero-date">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
-          <h2>{greeting}, {user.firstName}.</h2>
+      <section className="welcome">
+        <div>
+          <div className="date">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+          <h2>{greeting}, <span className="greet-name">{user.firstName === 'System' ? 'Admin' : user.firstName}</span></h2>
           <p>
             {stats.todayCount ? `${stats.todayCount} sale${stats.todayCount === 1 ? '' : 's'} rung up so far today.` : 'No sales yet today.'}{' '}
             {stats.low.length ? `${stats.low.length} product${stats.low.length === 1 ? ' needs' : 's need'} restocking` : 'Stock levels look healthy'}
             {isAdmin && pendingLeave.length ? ` and ${pendingLeave.length} leave request${pendingLeave.length === 1 ? ' is' : 's are'} waiting for you.` : '.'}
           </p>
-          <div className="hero-actions">
-            <button className="btn btn-accent" onClick={() => navigate('/pos')}><Icon name="cart" size={16} /> New sale</button>
-            <button className="btn btn-ghost-light" onClick={() => navigate('/products', { state: { filter: 'low' } })}><Icon name="box" size={16} /> Restock list</button>
-            {isAdmin && pendingLeave.length > 0 && <button className="btn btn-ghost-light" onClick={() => navigate('/leave')}><Icon name="calendar" size={16} /> Review leave</button>}
-          </div>
-        </div>
-        <div className="hero-panel">
-          <div className="hero-kpis">
-            <div className="hero-kpi"><div className="k">Today</div><div className="v">{money(stats.todayRevenue)}</div><TrendChip value={stats.todayTrend} label="vs yday" /></div>
-            <div className="hero-kpi"><div className="k">This month</div><div className="v">{money(stats.monthRevenue)}</div><TrendChip value={stats.monthTrend} label="vs last" /></div>
-            <div className="hero-kpi"><div className="k">Avg. order</div><div className="v">{money(stats.avgOrder)}</div><span className="trend flat">{stats.monthCount} orders</span></div>
-          </div>
-          <div>
-            <Sparkline data={stats.days.map((d) => d.value)} width={480} height={70} />
-            <div className="hero-spark-label"><span>{stats.days[0].label}</span><span>Sales, last 14 days</span><span>Today</span></div>
-          </div>
         </div>
       </section>
 
+      <div className="quick-actions">
+        <Link to="/pos" className="quick-action qa-coral"><div className="qa-ico c-coral"><Icon name="pos" size={20} /></div><div><div className="qa-t">New sale</div><div className="qa-s">Ring up an order</div></div></Link>
+        <Link to="/products" state={{ filter: 'low' }} className="quick-action qa-amber"><div className="qa-ico c-amber"><Icon name="dolly" size={20} /></div><div><div className="qa-t">Restock list</div><div className="qa-s">{stats.low.length ? `${stats.low.length} items running low` : 'All stocked up'}</div></div></Link>
+        {isAdmin
+          ? <Link to="/customers" className="quick-action qa-lilac"><div className="qa-ico c-lilac"><Icon name="userPlus" size={20} /></div><div><div className="qa-t">Customers</div><div className="qa-s">{stats.inactive.length} to follow up</div></div></Link>
+          : <Link to="/leave" className="quick-action qa-mint"><div className="qa-ico c-mint"><Icon name="calendar" size={20} /></div><div><div className="qa-t">Request leave</div><div className="qa-s">{pendingLeave.length ? `${pendingLeave.length} pending` : 'Plan time off'}</div></div></Link>}
+        {isAdmin
+          ? <Link to="/leave" className="quick-action qa-mint"><div className="qa-ico c-mint"><Icon name="calendarCheck" size={20} /></div><div><div className="qa-t">Leave requests</div><div className="qa-s">{pendingLeave.length ? `${pendingLeave.length} waiting` : 'Nothing waiting'}</div></div></Link>
+          : <Link to="/attendance" className="quick-action qa-yellow"><div className="qa-ico c-yellow"><Icon name="userClock" size={20} /></div><div><div className="qa-t">My shifts</div><div className="qa-s">Clock-in history</div></div></Link>}
+      </div>
+
       <div className="grid grid-4">
-        <StatCard icon="receipt" tone="blue" label="Orders today" value={stats.todayCount} spark={stats.ordersPerDay} foot="Last 14 days" />
-        <StatCard icon="users" tone="green" label="Customers" value={number(data.customers.length)} foot={`${stats.inactive.length} need a follow-up`} />
-        <StatCard icon="box" tone="violet" label="Products" value={number(data.products.length)} foot={`Stock value ${money(stats.stockValue)}`} />
+        <StatCard icon="money" tone="cyan" label="Sales today" value={money(stats.todayRevenue)} trend={stats.todayTrend} trendLabel="vs yesterday" />
+        <StatCard icon="chartLine" tone="blue" label="This month" value={money(stats.monthRevenue)} trend={stats.monthTrend} trendLabel="vs last month" />
+        <StatCard icon="receipt" tone="violet" label="Orders today" value={stats.todayCount} spark={stats.ordersPerDay} sparkColor="var(--violet)" foot={`Avg. order ${money(stats.avgOrder)}`} />
         <StatCard icon="alert" tone={stats.low.length ? 'amber' : 'green'} label="Low / out of stock" value={stats.low.length} foot={stats.low.length ? 'Needs attention' : 'All good'} />
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div><h3>Notice board</h3><div className="sub">Alerts update automatically. Your own notes are saved on this computer.</div></div>
+        </div>
+        <div className="board">
+          <NoticeBoard userId={user.empID} autoNotes={autoNotes} />
+        </div>
       </div>
 
       <div className="grid grid-dash">
@@ -140,7 +150,7 @@ export default function Dashboard() {
                 const s = stockStatus(p);
                 return (
                   <div className="list-row" key={p.id}>
-                    <Avatar src={p.imageUrl} name={p.name} tint={categoryColor(p.category)} size={36} square />
+                    <Avatar src={p.imageUrl} name={p.name} tint={categoryColor(p.category)} icon={categoryIcon(p.category)} size={36} square />
                     <div className="grow">
                       <div className="t">{p.name}</div>
                       <div className="s">{p.quantity} left · re-order at {p.reorderLevel}</div>
@@ -228,14 +238,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      ) : (
-        <div className="quick-actions">
-          <Link to="/pos" className="quick-action"><div className="stat-icon tone-blue"><Icon name="cart" /></div><div><div className="qa-t">New sale</div><div className="qa-s">Ring up a customer's order</div></div></Link>
-          <Link to="/products" className="quick-action"><div className="stat-icon tone-violet"><Icon name="box" /></div><div><div className="qa-t">Check stock</div><div className="qa-s">See what's available</div></div></Link>
-          <Link to="/leave" className="quick-action"><div className="stat-icon tone-green"><Icon name="calendar" /></div><div><div className="qa-t">Request leave</div><div className="qa-s">{pendingLeave.length ? `${pendingLeave.length} pending` : 'Plan time off'}</div></div></Link>
-          <Link to="/attendance" className="quick-action"><div className="stat-icon tone-cyan"><Icon name="clock" /></div><div><div className="qa-t">My shifts</div><div className="qa-s">Clock-in history</div></div></Link>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

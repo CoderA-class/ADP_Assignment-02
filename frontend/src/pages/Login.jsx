@@ -4,7 +4,8 @@ import Icon from '../components/Icons';
 import { APP_NAME } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useBackendStatus } from '../hooks/useBackendStatus';
-import { Sparkline } from '../components/Charts';
+import { StickyNote, TipNote } from '../components/ui';
+
 
 export default function Login() {
   const { user, login, sessionExpired } = useAuth();
@@ -42,61 +43,48 @@ export default function Login() {
     <div className="login-page">
       <aside className="login-aside">
         <div className="row-flex">
-          <div className="brand-logo"><Icon name="layers" size={19} /></div>
+          <div className="brand-logo"><Icon name="boxes" size={20} /></div>
           <div>
             <div className="brand-name">{APP_NAME}</div>
             <div className="brand-sub">Wholesale Manager</div>
           </div>
         </div>
         <div>
-          <h1>Stock, sales and staff — <em>one counter</em> for the whole warehouse.</h1>
-          <p>Ring up orders, keep an eye on stock levels and look after your customers and team.</p>
-          <div className="login-preview" aria-hidden="true">
-            <div className="preview-card a">
-              <div className="k">Sales today</div>
-              <div className="v">R 12 480,00</div>
-              <span className="trend up">▲ 18% vs yday</span>
-              <div className="mt-2"><Sparkline data={[3, 5, 4, 7, 6, 9, 8, 11, 10, 14]} width={250} height={46} /></div>
-            </div>
-            <div className="preview-card b">
-              <div className="row-flex" style={{ gap: 12 }}>
-                <div className="stat-icon tone-amber" style={{ width: 38, height: 38 }}><Icon name="alert" size={18} /></div>
-                <div>
-                  <div className="k">Low stock</div>
-                  <div style={{ fontWeight: 700 }}>Cake Flour 10kg</div>
-                  <div className="small muted">9 left · re-order at 10</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="login-features" style={{ marginTop: 28 }}>
-            <div className="login-feature"><span><Icon name="cart" /></span> Sales with automatic totals and receipts</div>
-            <div className="login-feature"><span><Icon name="bell" /></span> Alerts for low stock, quiet customers and leave</div>
-            <div className="login-feature"><span><Icon name="search" /></span> Find anything by name – IDs are made for you</div>
+          <h1>Run the warehouse floor from one screen.</h1>
+          <p className="lead">Sales, stock, customers and staff for wholesale businesses.</p>
+          <div className="login-notes" aria-hidden="true">
+            <StickyNote color="yellow" tilt={-3} pinned icon="cart" title="Quick sales" style={{ left: 0, top: 18 }}>
+              <p>Pick a customer, add products and the grand total works itself out.</p>
+            </StickyNote>
+            <StickyNote color="pink" tilt={2.5} icon="bell" title="Stock alerts" style={{ left: 170, top: 0 }}>
+              <p>Low and out-of-stock lines are flagged before they run out.</p>
+            </StickyNote>
+            <StickyNote color="mint" tilt={-2} pinned icon="userClock" title="Your team" style={{ left: 120, top: 150 }}>
+              <p>Clock-ins, leave requests and approvals in one place.</p>
+            </StickyNote>
           </div>
         </div>
-        <div className="small" style={{ color: '#7f8db0' }}>© {new Date().getFullYear()} {APP_NAME}</div>
+        <div className="login-foot">© {new Date().getFullYear()} {APP_NAME} · Wholesale Manager</div>
       </aside>
 
       <main className="login-main">
         <form className="login-card" onSubmit={submit}>
-          <div className="eyebrow">Sign in</div>
-          <h2>Welcome back.</h2>
-          <p className="muted mt-1">Pick your area, then sign in with your work email.</p>
+          <h2>Sign in</h2>
+          <p className="muted mt-1">Choose your account type and use your work email.</p>
 
           <div className="role-switch" role="tablist">
-            <button type="button" className={portal === 'EMPLOYEE' ? 'active' : ''} onClick={() => setPortal('EMPLOYEE')}><Icon name="user" size={16} /> Employee</button>
-            <button type="button" className={portal === 'ADMIN' ? 'active' : ''} onClick={() => setPortal('ADMIN')}><Icon name="shield" size={16} /> Admin</button>
+            <button type="button" className={portal === 'EMPLOYEE' ? 'active' : ''} onClick={() => setPortal('EMPLOYEE')}><Icon name="userTie" size={15} /> Employee</button>
+            <button type="button" className={portal === 'ADMIN' ? 'active' : ''} onClick={() => setPortal('ADMIN')}><Icon name="shield" size={15} /> Admin</button>
           </div>
 
           {sessionExpired && online !== false && (
-            <div className="banner" style={{ borderRadius: 10, marginBottom: 14, background: 'var(--accent-50)', border: '1px solid #f3dca8', color: '#7a4b00' }}>
+            <div className="banner" style={{ borderRadius: 14, marginBottom: 14, background: 'var(--accent-50)', color: '#8a3320' }}>
               <Icon name="lock" size={16} />
               <span>Your session ended. Please sign in again.</span>
             </div>
           )}
           {online === false && (
-            <div className="banner offline" style={{ borderRadius: 10, marginBottom: 14, border: '1px solid #fed7aa' }}>
+            <div className="banner offline" style={{ borderRadius: 14, marginBottom: 14, marginRight: 0 }}>
               <div className="spinner" style={{ width: 16, height: 16 }} />
               <span>Waiting for the server to start… you can log in as soon as it's up.</span>
             </div>
@@ -127,9 +115,9 @@ export default function Login() {
             </button>
           </div>
 
-          <div className="demo-box">
+          <TipNote style={{ marginTop: 22 }}>
             <strong>First time?</strong> The backend creates an admin account on first start – the login details are printed in the IntelliJ console and in the README. Admins add employees (and their passwords) under <em>Employees</em>.
-          </div>
+          </TipNote>
         </form>
       </main>
     </div>

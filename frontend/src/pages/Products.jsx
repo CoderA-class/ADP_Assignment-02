@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useApi } from '../hooks/useApi';
 import { api } from '../services/api';
-import { categoryColor, colorFor, matches, money, number, stockStatus } from '../utils/format';
+import { categoryColor, categoryIcon, colorFor, matches, money, number, stockStatus } from '../utils/format';
 import { storage } from '../utils/storage';
 
 const CATEGORY_SUGGESTIONS = ['Bakery', 'Beverages', 'Dairy', 'Pantry', 'Snacks', 'Cleaning', 'Frozen', 'Personal Care', 'Airtime', 'General'];
@@ -130,7 +130,7 @@ export default function Products() {
                   const s = stockStatus(p);
                   return (
                     <tr key={p.id} className="clickable" onClick={() => setViewing(p)}>
-                      <td><div className="cell-entity"><Avatar src={p.imageUrl} name={p.name} tint={categoryColor(p.category)} square size={40} /><div><div className="t">{p.name}</div><div className="s mono">{p.id}</div></div></div></td>
+                      <td><div className="cell-entity"><Avatar src={p.imageUrl} name={p.name} tint={categoryColor(p.category)} icon={categoryIcon(p.category)} square size={40} /><div><div className="t">{p.name}</div><div className="s mono">{p.id}</div></div></div></td>
                       <td>{p.category}</td>
                       <td>{supplierName(p.supplierId) || <span className="muted">—</span>}</td>
                       <td className="num">{money(p.price)}</td>

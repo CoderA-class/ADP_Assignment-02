@@ -65,7 +65,7 @@ export function initials(name = '') {
   return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
 }
 
-export const PALETTE = ['#2563eb', '#0d9488', '#d97706', '#4f46e5', '#0891b2', '#16a34a', '#b45309', '#475569', '#7c3aed', '#be123c'];
+export const PALETTE = ['#0f766e', '#2f7bd6', '#c2410c', '#7a5af5', '#1f9d61', '#d6453d', '#b26f00', '#c03862', '#0e7490', '#4b5c6d'];
 export function colorFor(key = '') {
   let hash = 0;
   for (const ch of String(key)) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
@@ -78,6 +78,12 @@ const CATEGORY_COLORS = {
   snacks: '#c2410c', frozen: '#0e7490', cleaning: '#7c3aed', 'personal care': '#be185d', airtime: '#4f46e5', general: '#475569'
 };
 export const categoryColor = (category) => CATEGORY_COLORS[String(category || 'General').trim().toLowerCase()] || colorFor(category);
+
+const CATEGORY_ICONS = {
+  bakery: 'bread', dairy: 'cheese', beverages: 'bottle', drinks: 'bottle', pantry: 'jar', groceries: 'jar', snacks: 'cookie',
+  frozen: 'snowflake', cleaning: 'spray', 'personal care': 'soap', airtime: 'mobile', general: 'box', produce: 'carrot', eggs: 'egg', grains: 'wheat'
+};
+export const categoryIcon = (category) => CATEGORY_ICONS[String(category || 'General').trim().toLowerCase()] || 'box';
 
 export const fullName = (p) => `${p?.firstName || ''} ${p?.lastName || ''}`.trim();
 

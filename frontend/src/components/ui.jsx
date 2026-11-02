@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icons';
-import { categoryColor, colorFor, initials } from '../utils/format';
+import { categoryColor, categoryIcon, colorFor, initials } from '../utils/format';
 import { resizeImage } from '../utils/image';
 import { Sparkline } from './Charts';
 
@@ -16,14 +16,16 @@ export function Avatar({ src, name, size = 36, square = false, icon = 'box', tin
 }
 
 /* Product picture, or a tile tinted by category when no picture has been uploaded yet */
-export function ProductImage({ src, name, category, iconSize = 28 }) {
+export function ProductImage({ src, name, category, iconSize = 28, label = iconSize >= 24 }) {
   if (src) return <img src={src} alt={name} />;
   const c = categoryColor(category);
   return (
-    <div className="placeholder-img" style={{ background: `${c}12`, color: c }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-        <Icon name="box" size={iconSize + 6} stroke={1.6} />
-        {iconSize >= 24 && <span className="placeholder-label">{category || 'Product'}</span>}
+    <div className="placeholder-img" style={{ background: `${c}17`, color: c }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        {iconSize >= 20
+          ? <span className="ph-icon" style={label ? undefined : { width: 60 }}><Icon name={categoryIcon(category)} size={iconSize} /></span>
+          : <Icon name={categoryIcon(category)} size={iconSize} />}
+        {label && <span className="placeholder-label">{category || 'Product'}</span>}
       </div>
     </div>
   );
@@ -73,7 +75,28 @@ export function StatCard({ icon, tone = 'blue', label, value, foot, trend, trend
 export function TrendChip({ value, label }) {
   if (!Number.isFinite(value)) return <span className="trend flat">New {label ? `· ${label}` : ''}</span>;
   const dir = value > 0.5 ? 'up' : value < -0.5 ? 'down' : 'flat';
-  return <span className={`trend ${dir}`}>{dir === 'up' ? '▲' : dir === 'down' ? '▼' : '•'} {Math.abs(value).toFixed(0)}%{label ? ` ${label}` : ''}</span>;
+  return (
+    <span className={`trend ${dir}`}>
+      <Icon name={dir === 'up' ? 'trendUp' : dir === 'down' ? 'trendDown' : 'minus'} size={11} /> {Math.abs(value).toFixed(0)}%{label ? ` ${label}` : ''}
+    </span>
+  );
+}
+
+/* A sticky note. tilt in degrees; pinned shows a thumbtack instead of tape */
+export function StickyNote({ color = 'yellow', tilt = -1.5, pinned = false, icon, title, children, foot, className = '', style }) {
+  return (
+    <div className={`sticky ${color}${pinned ? ' pinned' : ''} ${className}`} style={{ '--tilt': `${tilt}deg`, ...style }}>
+      {pinned && <span className="pin"><Icon name="pinNote" size={20} /></span>}
+      {title && <h4>{icon && <Icon name={icon} size={15} />}{title}</h4>}
+      {children}
+      {foot && <div className="sticky-foot">{foot}</div>}
+    </div>
+  );
+}
+
+/* Small yellow tip note used on forms and pages */
+export function TipNote({ children, icon = 'lightbulb', style }) {
+  return <div className="tip-note" style={style}><Icon name={icon} size={15} /><div>{children}</div></div>;
 }
 
 export function EmptyState({ icon = 'box', title, message, action }) {

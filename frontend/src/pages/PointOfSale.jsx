@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useApi } from '../hooks/useApi';
 import { api } from '../services/api';
-import { categoryColor, colorFor, formatDateTime, fullName, matches, money, stockStatus } from '../utils/format';
+import { categoryColor, categoryIcon, colorFor, formatDateTime, fullName, matches, money, stockStatus } from '../utils/format';
 
 /*
  * Point of Sale – "New Sale"
@@ -172,7 +172,7 @@ export default function PointOfSale() {
               <EmptyState icon="cart" title="The slip is empty" message="Tap a product on the left – or type its name and press Enter." />
             ) : lines.map((l) => (
               <div className="cart-line" key={l.productId}>
-                <Avatar src={l.product.imageUrl} name={l.product.name} tint={categoryColor(l.product.category)} size={40} square />
+                <Avatar src={l.product.imageUrl} name={l.product.name} tint={categoryColor(l.product.category)} icon={categoryIcon(l.product.category)} size={40} square />
                 <div style={{ minWidth: 0 }}>
                   <div className="n">{l.product.name}</div>
                   <div className="u">{money(l.product.price)} each</div>

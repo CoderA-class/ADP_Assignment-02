@@ -12,21 +12,40 @@ import { fullName, minutesToHours, timeAgo } from '../utils/format';
 export const APP_NAME = 'StockFlow';
 
 const NAV = [
-  { section: 'Overview' },
-  { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
-  { to: '/pos', label: 'New Sale', icon: 'cart' },
-  { to: '/orders', label: 'Orders', icon: 'receipt' },
-  { section: 'Inventory' },
-  { to: '/products', label: 'Products & Stock', icon: 'box', badge: 'stock' },
-  { to: '/suppliers', label: 'Suppliers', icon: 'truck' },
-  { section: 'People' },
-  { to: '/customers', label: 'Customers', icon: 'users' },
-  { to: '/employees', label: 'Employees', icon: 'badge', admin: true },
-  { section: 'Workplace' },
-  { to: '/leave', label: 'Leave', adminLabel: 'Leave Requests', icon: 'calendar', badge: 'leave' },
-  { to: '/attendance', label: 'My Attendance', adminLabel: 'Attendance', icon: 'clock' },
-  { to: '/notifications', label: 'Notifications', icon: 'bell', badge: 'unread' }
+  { section: 'Overview', color: 'teal' },
+  { to: '/', label: 'Dashboard', icon: 'dashboard', end: true, color: 'teal' },
+  { to: '/pos', label: 'New Sale', icon: 'pos', color: 'coral' },
+  { to: '/orders', label: 'Orders', icon: 'receipt', color: 'sky' },
+  { section: 'Inventory', color: 'amber' },
+  { to: '/products', label: 'Products & Stock', icon: 'boxes', badge: 'stock', color: 'amber' },
+  { to: '/suppliers', label: 'Suppliers', icon: 'truck', color: 'peach' },
+  { section: 'People', color: 'lilac' },
+  { to: '/customers', label: 'Customers', icon: 'users', color: 'lilac' },
+  { to: '/employees', label: 'Employees', icon: 'badge', admin: true, color: 'pink' },
+  { section: 'Workplace', color: 'mint' },
+  { to: '/leave', label: 'Leave', adminLabel: 'Leave Requests', icon: 'calendar', badge: 'leave', color: 'mint' },
+  { to: '/attendance', label: 'My Attendance', adminLabel: 'Attendance', icon: 'userClock', color: 'yellow' },
+  { to: '/notifications', label: 'Notifications', icon: 'bell', badge: 'unread', color: 'slate' }
 ];
+
+const NAV_BY_PATH = Object.fromEntries(NAV.filter((n) => n.to).map((n) => [n.to, n]));
+NAV_BY_PATH['/profile'] = { icon: 'circleUser', color: 'teal' };
+
+/* soft background icons that drift slowly behind the content */
+const FLOATIES = [
+  ['box', 18, 24, 54], ['truck', 28, 88, 46], ['tag', 52, 14, 38], ['clipboard', 74, 92, 50],
+  ['cart', 88, 30, 44], ['warehouse', 40, 60, 58], ['receipt', 14, 70, 36], ['dolly', 64, 46, 42]
+];
+
+export function Floaties() {
+  return (
+    <div className="floaties" aria-hidden="true">
+      {FLOATIES.map(([icon, top, left, size], i) => (
+        <span key={i} className="floaty" style={{ top: `${top}%`, left: `${left}%` }}><Icon name={icon} size={size} /></span>
+      ))}
+    </div>
+  );
+}
 
 const TITLES = {
   '/': 'Dashboard', '/pos': 'New Sale', '/orders': 'Orders', '/products': 'Products & Stock', '/suppliers': 'Suppliers',
@@ -43,6 +62,12 @@ export default function Layout() {
 
   useEffect(() => { setMenuOpen(false); }, [location.pathname]);
 
+  /* tint the page background to match the colour of the section you're in */
+  useEffect(() => {
+    document.body.dataset.tint = NAV_BY_PATH[location.pathname]?.color || 'teal';
+    return () => { delete document.body.dataset.tint; };
+  }, [location.pathname]);
+
   const lowStockAlerts = items.filter((n) => !n.seen && (n.type === 'LOW_STOCK' || n.type === 'OUT_OF_STOCK')).length;
   const leaveAlerts = items.filter((n) => !n.seen && (n.type === 'LEAVE_REQUEST' || n.type === 'LEAVE_DECISION')).length;
   const badges = { stock: lowStockAlerts, leave: leaveAlerts, unread };
@@ -51,7 +76,7 @@ export default function Layout() {
     <div className="app-shell">
       <aside className={`sidebar${menuOpen ? ' open' : ''}`}>
         <div className="sidebar-brand">
-          <div className="brand-logo"><Icon name="layers" size={19} /></div>
+          <div className="brand-logo"><Icon name="boxes" size={20} /></div>
           <div>
             <div className="brand-name">{APP_NAME}</div>
             <div className="brand-sub">Wholesale Manager</div>
@@ -59,10 +84,10 @@ export default function Layout() {
         </div>
         <nav className="sidebar-nav">
           {NAV.filter((n) => !n.admin || isAdmin).map((item, i) => item.section ? (
-            <div key={`s${i}`} className="nav-section">{item.section}</div>
+            <div key={`s${i}`} className={`nav-section s-${item.color}`}>{item.section}</div>
           ) : (
-            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-              <Icon name={item.icon} size={18} />
+            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `nav-link n-${item.color}${isActive ? ' active' : ''}`}>
+              <span className={`nav-ico c-${item.color}`}><Icon name={item.icon} size={15} /></span>
               <span>{isAdmin && item.adminLabel ? item.adminLabel : item.label}</span>
               {item.badge && badges[item.badge] > 0 && <span className="nav-badge">{badges[item.badge]}</span>}
             </NavLink>
@@ -83,9 +108,11 @@ export default function Layout() {
       <div className="main">
         <header className="topbar">
           <button className="icon-btn menu-toggle" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Icon name="menu" /></button>
-          <div>
-            <div className="topbar-title">{TITLES[location.pathname] || APP_NAME}</div>
-            <div className="topbar-sub hide-sm">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+          <div className="topbar-title">
+            <div>
+              <div>{TITLES[location.pathname] || APP_NAME}</div>
+              <div className="topbar-sub hide-sm">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            </div>
           </div>
           <div className="topbar-spacer" />
           <ClockWidget />
@@ -207,7 +234,7 @@ function ClockWidget() {
     <div className={`clock-pill${shift ? ' on' : ''}`}>
       <Icon name="clock" size={15} />
       <span className="pill-text">{shift ? `On shift · ${minutesToHours(minutes)}` : 'Off shift'}</span>
-      <button className={`btn btn-sm ${shift ? 'btn-secondary' : 'btn-primary'}`} style={{ height: 28, borderRadius: 7 }} onClick={toggle} disabled={busy}>
+      <button className={`btn btn-sm ${shift ? 'btn-secondary' : 'btn-primary'}`} style={{ height: 30, borderRadius: 10 }} onClick={toggle} disabled={busy}>
         <Icon name={shift ? 'stop' : 'play'} size={12} /> {shift ? 'Clock out' : 'Clock in'}
       </button>
     </div>
@@ -225,7 +252,7 @@ function UserMenu() {
       <button className="row-flex" style={{ border: 0, background: 'none', cursor: 'pointer', padding: 0 }} onClick={() => setOpen((o) => !o)} aria-label="Account menu">
         <Avatar src={user?.imageUrl} name={fullName(user)} size={36} />
         <div className="hide-sm" style={{ textAlign: 'left', lineHeight: 1.2 }}>
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{fullName(user)}</div>
+          <div style={{ fontWeight: 800, fontSize: 13 }}>{fullName(user)}</div>
           <div className="muted" style={{ fontSize: 11 }}>{isAdmin ? 'Admin' : 'Employee'}</div>
         </div>
         <Icon name="chevronDown" size={16} className="hide-sm" />

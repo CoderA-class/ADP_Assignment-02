@@ -80,7 +80,7 @@ export function Donut({ data, size = 150, thickness = 22, centerLabel, centerVal
           offset += len;
           return el;
         })}
-        <text x="50%" y="47%" textAnchor="middle" style={{ fontSize: 20, fontWeight: 700, fill: 'var(--text)' }}>{centerValue}</text>
+        <text x="50%" y="47%" textAnchor="middle" style={{ fontSize: 20, fontWeight: 900, fill: 'var(--ink)' }}>{centerValue}</text>
         <text x="50%" y="62%" textAnchor="middle" style={{ fontSize: 11, fill: 'var(--muted)' }}>{centerLabel}</text>
       </svg>
       <div className="legend" style={{ flex: 1, minWidth: 0 }}>
