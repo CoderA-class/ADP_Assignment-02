@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.Objects;
 
@@ -18,15 +19,21 @@ Customer model class
 public class Customer {
     @Id
     @Column(name = "custID")
+    @NotBlank
     private String custID;
+    @NotBlank
     @Column(nullable = false)
     private String firstName;
+    @NotBlank
     @Column(nullable = false)
     private String lastName;
+    @NotBlank
     @Column(nullable = false)
     private String email;
+    @NotBlank
     @Column(nullable = false)
     private String phoneNumber;
+    @NotBlank
     @Column(nullable = false)
     private String address;
 

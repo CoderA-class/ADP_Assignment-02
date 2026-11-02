@@ -1,44 +1,26 @@
-package repository;
+package za.ac.cput.adp_assignment02.repository;
 
-import factory.EmployeeFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import za.ac.cput.adp_assignment02.domain.Employee;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@DataJpaTest
 class EmployeeRepositoryImplTest {
-
-    private EmployeeRepositoryImpl repository;
-    private EmployeeFactory factory;
-
-    @BeforeEach
-    void setUp() {
-        repository = new EmployeeRepositoryImpl();
-        factory = new EmployeeFactory();
-    }
-
-    @AfterEach
-    void tearDown() {
-        repository = null;
-        factory = null;
-    }
+    @Autowired
+    private EmployeeRepository repository;
 
     @Test
-    void create() {
-    }
+    void deletesEmployeeFromRepository() {
+        Employee employee = new Employee.Builder().setEmpId("E-2").setFName("Noah")
+                .setLName("Nkosi").setSalary(39000).setEmail("noah@example.com")
+                .setPhone("0827654321").setRole("Clerk")
+                .setEmpStatus(Employee.EmpStatus.SUSPENDED).build();
+        repository.save(employee);
 
-    @Test
-    void read() {
-    }
+        repository.deleteById("E-2");
 
-    @Test
-    void update() {
-    }
-
-    @Test
-    void delete() {
-    }
-
-    @Test
-    void getAll() {
+        assertFalse(repository.existsById("E-2"));
     }
 }

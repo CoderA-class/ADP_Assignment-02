@@ -9,6 +9,7 @@ Date: 10 August 2026
 
 
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import za.ac.cput.adp_assignment02.domain.Customer;
 import za.ac.cput.adp_assignment02.service.CustomerService;
 
@@ -26,7 +27,7 @@ public class CustomerController {
     }
 
     @PostMapping("/create")
-    public Customer create(@RequestBody Customer customer) {
+    public Customer create(@Valid @RequestBody Customer customer) {
         return customerService.create(customer);
     }
 
@@ -36,7 +37,7 @@ public class CustomerController {
     }
 
     @PutMapping("/update")
-    public Customer update(@RequestBody Customer customer) {
+    public Customer update(@Valid @RequestBody Customer customer) {
         return customerService.update(customer);
     }
 

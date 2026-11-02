@@ -9,6 +9,8 @@ Date: 10 August 2026
 
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import za.ac.cput.adp_assignment02.domain.Customer;
 import za.ac.cput.adp_assignment02.repository.CustomerRepository;
 
@@ -25,6 +27,9 @@ public class CustomerService implements ICustomerService {
 
     @Override
     public Customer create(Customer customer) {
+        if (repository.existsById(customer.getCustID())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Customer ID already exists.");
+        }
         return repository.save(customer);
     }
 

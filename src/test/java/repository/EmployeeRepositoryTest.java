@@ -1,44 +1,29 @@
-package repository;
+package za.ac.cput.adp_assignment02.repository;
 
-import factory.EmployeeFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import za.ac.cput.adp_assignment02.domain.Employee;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@DataJpaTest
 class EmployeeRepositoryTest {
-
+    @Autowired
     private EmployeeRepository repository;
-    private EmployeeFactory factory;
-
-    @BeforeEach
-    void setUp() {
-        repository = new EmployeeRepositoryImpl();
-        factory = new EmployeeFactory();
-    }
-
-    @AfterEach
-    void tearDown() {
-        repository = null;
-        factory = null;
-    }
 
     @Test
-    void create() {
-    }
+    void persistsEmployeeAndReadsItById() {
+        Employee employee = new Employee.Builder().setEmpId("E-1").setFName("Mia")
+                .setLName("Dlamini").setSalary(42000.50).setEmail("mia@example.com")
+                .setPhone("0821234567").setRole("Analyst")
+                .setEmpStatus(Employee.EmpStatus.ACTIVE).build();
 
-    @Test
-    void read() {
-    }
+        repository.save(employee);
 
-    @Test
-    void update() {
-    }
-
-    @Test
-    void delete() {
-    }
-
-    @Test
-    void getAll() {
+        Employee saved = repository.findById("E-1").orElseThrow();
+        assertEquals("Mia", saved.getFName());
+        assertEquals(Employee.EmpStatus.ACTIVE, saved.getEmpStatus());
+        assertTrue(repository.existsById("E-1"));
     }
 }

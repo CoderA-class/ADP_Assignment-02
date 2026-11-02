@@ -13,7 +13,12 @@ export async function requestJson(path, options = {}) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || 'Request failed');
+    let message = text;
+    try {
+      const body = JSON.parse(text);
+      message = body.detail || body.message || body.error || text;
+    } catch {}
+    throw new Error(message || `Request failed with status ${response.status}`);
   }
 
   const contentType = response.headers.get('content-type') || '';

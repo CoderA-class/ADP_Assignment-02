@@ -9,6 +9,8 @@ Date: 10 August 2026
 
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import za.ac.cput.adp_assignment02.domain.Employee;
 import za.ac.cput.adp_assignment02.repository.EmployeeRepository;
 
@@ -25,6 +27,9 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public Employee create(Employee employee) {
+        if (repository.existsById(employee.getEmpID())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Employee ID already exists.");
+        }
         return repository.save(employee);
     }
 
