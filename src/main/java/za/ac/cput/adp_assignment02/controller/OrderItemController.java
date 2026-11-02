@@ -8,6 +8,7 @@ Date: 10 August 2026
 */
 
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.adp_assignment02.domain.OrderItem;
 import za.ac.cput.adp_assignment02.service.OrderItemService;
@@ -17,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/order-items")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"})
 public class OrderItemController {
     private final OrderItemService orderItemService;
 
@@ -31,8 +31,9 @@ public class OrderItemController {
     }
 
     @GetMapping("/read/{orderItemId}")
-    public OrderItem read(@PathVariable String orderItemId) {
-        return orderItemService.read(orderItemId);
+    public ResponseEntity<OrderItem> read(@PathVariable String orderItemId) {
+        OrderItem item = orderItemService.read(orderItemId);
+        return item == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(item);
     }
 
     @PutMapping("/update")
@@ -48,5 +49,10 @@ public class OrderItemController {
     @GetMapping("/all")
     public List<OrderItem> getAll() {
         return orderItemService.getAll();
+    }
+
+    @GetMapping("/order/{orderId}")
+    public List<OrderItem> forOrder(@PathVariable String orderId) {
+        return orderItemService.getForOrder(orderId);
     }
 }

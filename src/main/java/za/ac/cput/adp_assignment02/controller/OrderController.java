@@ -8,8 +8,11 @@ Date: 10 August 2026
 */
 
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.adp_assignment02.domain.Order;
+import za.ac.cput.adp_assignment02.dto.CheckoutRequest;
+import za.ac.cput.adp_assignment02.security.CurrentUser;
 import za.ac.cput.adp_assignment02.service.OrderService;
 
 
@@ -17,12 +20,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"})
 public class OrderController {
     private final OrderService orderService;
+    private final CurrentUser currentUser;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, CurrentUser currentUser) {
         this.orderService = orderService;
+        this.currentUser = currentUser;
+    }
+
+    /* Point of Sale: { customerId, items: [ { productId, quantity } ] }
+       The sale is always recorded against the logged-in employee. */
+    @PostMapping("/checkout")
+    public Order checkout(@RequestBody CheckoutRequest request) {
+        String cashier = currentUser.employee().map(e -> e.getEmpID()).orElse(null);
+        return orderService.checkout(new CheckoutRequest(request.customerId(), cashier, request.items()));
     }
 
     @PostMapping("/create")
@@ -31,8 +43,9 @@ public class OrderController {
     }
 
     @GetMapping("/read/{orderId}")
-    public Order read(@PathVariable String orderId) {
-        return orderService.read(orderId);
+    public ResponseEntity<Order> read(@PathVariable String orderId) {
+        Order order = orderService.read(orderId);
+        return order == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(order);
     }
 
     @PutMapping("/update")
@@ -48,5 +61,10 @@ public class OrderController {
     @GetMapping("/all")
     public List<Order> getAll() {
         return orderService.getAll();
+    }
+
+    @GetMapping("/search")
+    public List<Order> search(@RequestParam(defaultValue = "") String customerName) {
+        return orderService.searchByCustomerName(customerName);
     }
 }

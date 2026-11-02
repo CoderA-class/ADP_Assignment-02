@@ -8,32 +8,38 @@ Date: 10 August 2026
 */
 
 
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import za.ac.cput.adp_assignment02.domain.Customer;
+import za.ac.cput.adp_assignment02.domain.Order;
 import za.ac.cput.adp_assignment02.service.CustomerService;
+import za.ac.cput.adp_assignment02.service.OrderService;
 
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"})
 public class CustomerController {
     private final CustomerService customerService;
+    private final OrderService orderService;
 
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService, OrderService orderService) {
         this.customerService = customerService;
+        this.orderService = orderService;
     }
 
+    /* The customer ID is generated automatically - leave custID empty */
     @PostMapping("/create")
     public Customer create(@Valid @RequestBody Customer customer) {
         return customerService.create(customer);
     }
 
     @GetMapping("/read/{custID}")
-    public Customer read(@PathVariable String custID) {
-        return customerService.read(custID);
+    public ResponseEntity<Customer> read(@PathVariable String custID) {
+        Customer customer = customerService.read(custID);
+        return customer == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(customer);
     }
 
     @PutMapping("/update")
@@ -49,5 +55,16 @@ public class CustomerController {
     @GetMapping("/all")
     public List<Customer> getAll() {
         return customerService.getAll();
+    }
+
+    /* e.g. /customers/search?name=john */
+    @GetMapping("/search")
+    public List<Customer> search(@RequestParam(defaultValue = "") String name) {
+        return customerService.searchByName(name);
+    }
+
+    @GetMapping("/{custID}/orders")
+    public List<Order> orders(@PathVariable String custID) {
+        return orderService.getForCustomer(custID);
     }
 }

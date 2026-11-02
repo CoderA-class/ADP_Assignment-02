@@ -5,21 +5,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/*
+ * Team integration test. Now that Spring Security is on, requests run as a logged-in ADMIN
+ * (@WithMockUser) and send a CSRF token (.with(csrf())).
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "admin@wholesale.local", roles = "ADMIN")
 class CustomerControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     void createsCustomerFromJsonRequest() throws Exception {
-        mockMvc.perform(post("/customers/create")
+        mockMvc.perform(post("/customers/create").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -42,7 +49,7 @@ class CustomerControllerIntegrationTest {
 
         for (int index = 0; index < statuses.length; index++) {
             String employeeId = "E-HTTP-" + index;
-            mockMvc.perform(post("/employees/create")
+            mockMvc.perform(post("/employees/create").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {

@@ -8,6 +8,7 @@ Date: 10 August 2026
 */
 
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.adp_assignment02.domain.Supplier;
 import za.ac.cput.adp_assignment02.service.SupplierService;
@@ -16,7 +17,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/suppliers")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"})
 public class SupplierController {
     private final SupplierService supplierService;
 
@@ -24,14 +24,16 @@ public class SupplierController {
         this.supplierService = supplierService;
     }
 
+    /* The supplier ID is generated automatically - leave supplierId empty */
     @PostMapping("/create")
     public Supplier create(@RequestBody Supplier supplier) {
         return supplierService.create(supplier);
     }
 
     @GetMapping("/read/{supplierId}")
-    public Supplier read(@PathVariable String supplierId) {
-        return supplierService.read(supplierId);
+    public ResponseEntity<Supplier> read(@PathVariable String supplierId) {
+        Supplier supplier = supplierService.read(supplierId);
+        return supplier == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(supplier);
     }
 
     @PutMapping("/update")
@@ -47,5 +49,10 @@ public class SupplierController {
     @GetMapping("/all")
     public List<Supplier> getAll() {
         return supplierService.getAll();
+    }
+
+    @GetMapping("/search")
+    public List<Supplier> search(@RequestParam(defaultValue = "") String name) {
+        return supplierService.searchByName(name);
     }
 }

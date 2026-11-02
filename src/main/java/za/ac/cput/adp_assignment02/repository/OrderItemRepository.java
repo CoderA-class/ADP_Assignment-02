@@ -9,6 +9,9 @@ package za.ac.cput.adp_assignment02.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import za.ac.cput.adp_assignment02.domain.OrderItem;
 
+import java.util.List;
+
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
+    List<OrderItem> findByOrderId(String orderId);
 }

@@ -8,6 +8,7 @@ Date: 10 August 2026
 */
 
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.adp_assignment02.domain.Product;
 import za.ac.cput.adp_assignment02.service.ProductService;
@@ -17,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/products")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"})
 public class ProductController {
     private final ProductService productService;
 
@@ -25,19 +25,27 @@ public class ProductController {
         this.productService = productService;
     }
 
+    /* The product ID is generated automatically - leave id empty */
     @PostMapping("/create")
     public Product create(@RequestBody Product product) {
         return productService.create(product);
     }
 
     @GetMapping("/read/{id}")
-    public Product read(@PathVariable String id) {
-        return productService.read(id);
+    public ResponseEntity<Product> read(@PathVariable String id) {
+        Product product = productService.read(id);
+        return product == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(product);
     }
 
     @PutMapping("/update")
     public Product update(@RequestBody Product product) {
         return productService.update(product);
+    }
+
+    /* e.g. PUT /products/PRD-0001/restock?amount=50 */
+    @PutMapping("/{id}/restock")
+    public Product restock(@PathVariable String id, @RequestParam int amount) {
+        return productService.restock(id, amount);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -48,5 +56,15 @@ public class ProductController {
     @GetMapping("/all")
     public List<Product> getAll() {
         return productService.getAll();
+    }
+
+    @GetMapping("/search")
+    public List<Product> search(@RequestParam(defaultValue = "") String name) {
+        return productService.searchByName(name);
+    }
+
+    @GetMapping("/low-stock")
+    public List<Product> lowStock() {
+        return productService.getLowStock();
     }
 }

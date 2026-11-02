@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -12,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,9 @@ import java.util.List;
 * Order model class
 * Author: Rocco Given Visagie (220343527)
 * Date: 23 March 2026
+* Updated: auto-generated order ID (ORD-0001), stores who processed the sale,
+*          the exact time of the sale and a snapshot of the customer's name.
+*          Real foreign keys to customer and order items (Rocco's referential-integrity fix).
 */
 
 @Entity
@@ -28,18 +33,22 @@ public class Order {
     @Id
     @Column(name = "orderId")
     private String orderId;
-        @Column(name = "customer_id", nullable = false)
+    @Column(name = "customer_id", nullable = false)
     private String customerId;
-        @ManyToOne
-        @JoinColumn(name = "customer_id", insertable = false, updatable = false,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", insertable = false, updatable = false,
             foreignKey = @ForeignKey(name = "fk_order_customer"))
-        @JsonIgnore
-        private Customer customer;
+    @JsonIgnore
+    private Customer customer;
+    private String customerName;
+    private String employeeId;
+    private String employeeName;
     @Column(nullable = false)
     private LocalDate orderDate;
+    private LocalDateTime orderTime;
     @Column(nullable = false)
     private double totalAmount;
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>(); /* * Default constructor required by JPA. */
 
     public Order() {
@@ -48,7 +57,11 @@ public class Order {
     private Order(Builder builder) {
         this.orderId = builder.orderId;
         this.customerId = builder.customerId;
+        this.customerName = builder.customerName;
+        this.employeeId = builder.employeeId;
+        this.employeeName = builder.employeeName;
         this.orderDate = builder.orderDate;
+        this.orderTime = builder.orderTime;
         this.totalAmount = builder.totalAmount;
         this.orderItems = builder.orderItems;
     }
@@ -69,12 +82,44 @@ public class Order {
         this.customerId = customerId;
     }
 
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
+    }
+
     public LocalDate getOrderDate() {
         return orderDate;
     }
 
     public void setOrderDate(LocalDate orderDate) {
         this.orderDate = orderDate;
+    }
+
+    public LocalDateTime getOrderTime() {
+        return orderTime;
+    }
+
+    public void setOrderTime(LocalDateTime orderTime) {
+        this.orderTime = orderTime;
     }
 
     public double getTotalAmount() {
@@ -106,7 +151,11 @@ public class Order {
     public static class Builder {
         private String orderId;
         private String customerId;
+        private String customerName;
+        private String employeeId;
+        private String employeeName;
         private LocalDate orderDate;
+        private LocalDateTime orderTime;
         private double totalAmount;
         private List<OrderItem> orderItems = new ArrayList<>();
 
@@ -120,8 +169,28 @@ public class Order {
             return this;
         }
 
+        public Builder setCustomerName(String customerName) {
+            this.customerName = customerName;
+            return this;
+        }
+
+        public Builder setEmployeeId(String employeeId) {
+            this.employeeId = employeeId;
+            return this;
+        }
+
+        public Builder setEmployeeName(String employeeName) {
+            this.employeeName = employeeName;
+            return this;
+        }
+
         public Builder setOrderDate(LocalDate orderDate) {
             this.orderDate = orderDate;
+            return this;
+        }
+
+        public Builder setOrderTime(LocalDateTime orderTime) {
+            this.orderTime = orderTime;
             return this;
         }
 

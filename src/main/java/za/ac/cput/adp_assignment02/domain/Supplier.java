@@ -3,6 +3,7 @@ package za.ac.cput.adp_assignment02.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 /*
@@ -10,6 +11,7 @@ import jakarta.persistence.Table;
 * Supplier model class
 * Author: Luke John Zyster (220489114)
 * Date: 25 March 2026
+* Updated: auto-generated supplier ID (SUP-0001), contact person and optional image.
 */
 
 @Entity
@@ -20,12 +22,14 @@ public class Supplier {
     private String supplierId;
     @Column(nullable = false)
     private String name;
-    @Column(nullable = false)
+    private String contactPerson;
     private String email;
-    @Column(nullable = false)
     private String phone;
-    @Column(nullable = false)
     private String address;
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String imageUrl;
 
     public Supplier() {
     }
@@ -33,9 +37,11 @@ public class Supplier {
     private Supplier(SupplierBuilder builder) {
         this.supplierId = builder.supplierId;
         this.name = builder.name;
+        this.contactPerson = builder.contactPerson;
         this.email = builder.email;
         this.phone = builder.phone;
         this.address = builder.address;
+        this.imageUrl = builder.imageUrl;
     }
 
     public String getSupplierId() {
@@ -52,6 +58,14 @@ public class Supplier {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
     }
 
     public String getEmail() {
@@ -78,12 +92,22 @@ public class Supplier {
         this.address = address;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public static class SupplierBuilder {
         private String supplierId;
         private String name;
+        private String contactPerson;
         private String email;
         private String phone;
         private String address;
+        private String imageUrl;
 
         public SupplierBuilder setSupplierId(String supplierId) {
             this.supplierId = supplierId;
@@ -92,6 +116,11 @@ public class Supplier {
 
         public SupplierBuilder setName(String name) {
             this.name = name;
+            return this;
+        }
+
+        public SupplierBuilder setContactPerson(String contactPerson) {
+            this.contactPerson = contactPerson;
             return this;
         }
 
@@ -107,6 +136,11 @@ public class Supplier {
 
         public SupplierBuilder setAddress(String address) {
             this.address = address;
+            return this;
+        }
+
+        public SupplierBuilder setImageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
             return this;
         }
 
