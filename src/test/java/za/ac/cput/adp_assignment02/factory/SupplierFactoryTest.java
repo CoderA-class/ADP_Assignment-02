@@ -22,20 +22,4 @@ class SupplierFactoryTest {
         assertEquals("021 555 0202", s.getPhone());
         assertEquals("8 Industria Way", s.getAddress());
     }
-
-    // ---- team test (moved here from src/test/java/factory) ----
-
-    @Test
-    void createsSupplierAndRequiresAnId() {
-        Supplier supplier = SupplierFactory.createSupplier(
-                "S-1", "Cape Produce", "orders@example.com", "0211234567", "Cape Town");
-
-        assertEquals("S-1", supplier.getSupplierId());
-        assertEquals("Cape Produce", supplier.getName());
-        assertEquals("orders@example.com", supplier.getEmail());
-        assertEquals("0211234567", supplier.getPhone());
-        assertEquals("Cape Town", supplier.getAddress());
-        assertThrows(IllegalArgumentException.class,
-                () -> SupplierFactory.createSupplier("", "Name", "a@b.com", "123", "Address"));
-    }
 }

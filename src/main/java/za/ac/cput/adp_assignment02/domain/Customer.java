@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -24,7 +23,6 @@ public class Customer {
     @Id
     @Column(name = "custID")
     private String custID;
-    @NotBlank(message = "Customer name is required.")
     @Column(nullable = false)
     private String firstName;
     @Column(nullable = false)

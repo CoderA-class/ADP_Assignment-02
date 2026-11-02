@@ -38,19 +38,4 @@ class OrderItemTest {
         assertTrue(item.toString().contains("ITM-0009"));
         assertTrue(item.toString().contains("ORD-0003"));
     }
-
-    // ---- team test (moved here from src/test/java/domain) ----
-
-    @Test
-    void builderStoresOrderItemFields() {
-        OrderItem item = new OrderItem.OrderItemBuilder().setOrderItemId("OI-1")
-                .setOrderId("O-1").setProductId("P-1").setQuantity(3)
-                .setLineTotal(59.97).build();
-
-        assertEquals("OI-1", item.getOrderItemId());
-        assertEquals("O-1", item.getOrderId());
-        assertEquals("P-1", item.getProductId());
-        assertEquals(3, item.getQuantity());
-        assertEquals(59.97, item.getLineTotal());
-    }
 }

@@ -8,7 +8,6 @@ Date: 10 August 2026
 */
 
 
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +29,7 @@ public class EmployeeController {
 
     /* The employee ID is generated automatically - leave empID empty */
     @PostMapping("/create")
-    public Employee create(@Valid @RequestBody Employee employee) {
+    public Employee create(@RequestBody Employee employee) {
         return employeeService.create(employee);
     }
 
@@ -41,7 +40,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/update")
-    public Employee update(@Valid @RequestBody Employee employee) {
+    public Employee update(@RequestBody Employee employee) {
         return employeeService.update(employee);
     }
 

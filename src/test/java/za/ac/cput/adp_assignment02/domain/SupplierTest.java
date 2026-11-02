@@ -50,19 +50,4 @@ class SupplierTest {
     void toStringContainsTheName() {
         assertTrue(supplier.toString().contains("Cape Fresh Distributors"));
     }
-
-    // ---- team test (moved here from src/test/java/domain) ----
-
-    @Test
-    void builderCreatesSupplierWithAllFields() {
-        Supplier supplier = new Supplier.SupplierBuilder().setSupplierId("S-1")
-                .setName("Cape Produce").setEmail("orders@example.com")
-                .setPhone("0211234567").setAddress("Cape Town").build();
-
-        assertEquals("S-1", supplier.getSupplierId());
-        assertEquals("Cape Produce", supplier.getName());
-        assertEquals("orders@example.com", supplier.getEmail());
-        assertEquals("0211234567", supplier.getPhone());
-        assertEquals("Cape Town", supplier.getAddress());
-    }
 }

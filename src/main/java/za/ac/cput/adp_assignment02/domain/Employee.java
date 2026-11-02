@@ -1,6 +1,5 @@
 package za.ac.cput.adp_assignment02.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -28,15 +25,12 @@ public class Employee {
     @Id
     @Column(name = "empID")
     private String empID;
-    @NotBlank(message = "Employee name is required.")
     @Column(nullable = false)
     private String fName;
     @Column(nullable = false)
     private String lName;
-    @PositiveOrZero(message = "Salary cannot be negative.")
     @Column(nullable = false)
     private double salary;
-    @NotBlank(message = "An email address is required (employees use it to log in).")
     @Column(nullable = false)
     private String email;
     private String phone;
@@ -97,7 +91,6 @@ public class Employee {
     }
 
     @JsonProperty("firstName")
-    @JsonAlias("fName")   // the older JSON name still works
     public void setFName(String fName) {
         this.fName = fName;
     }
@@ -108,7 +101,6 @@ public class Employee {
     }
 
     @JsonProperty("lastName")
-    @JsonAlias("lName")
     public void setLName(String lName) {
         this.lName = lName;
     }

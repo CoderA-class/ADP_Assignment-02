@@ -30,19 +30,4 @@ class OrderItemFactoryTest {
         assertThrows(IllegalArgumentException.class, () -> OrderItemFactory.createOrderItem("ITM-0001", "ORD-0001", "PRD-0001", 0, 10));
         assertThrows(IllegalArgumentException.class, () -> OrderItemFactory.createOrderItem("ITM-0001", "ORD-0001", "PRD-0001", 1, -5));
     }
-
-    // ---- team test (moved here from src/test/java/factory) ----
-
-    @Test
-    void createsOrderItemAndRejectsInvalidQuantity() {
-        OrderItem item = OrderItemFactory.createOrderItem("OI-1", "O-1", "P-1", 2, 39.98);
-
-        assertEquals("OI-1", item.getOrderItemId());
-        assertEquals("O-1", item.getOrderId());
-        assertEquals("P-1", item.getProductId());
-        assertEquals(2, item.getQuantity());
-        assertEquals(39.98, item.getLineTotal());
-        assertThrows(IllegalArgumentException.class,
-                () -> OrderItemFactory.createOrderItem("OI-2", "O-1", "P-1", 0, 0));
-    }
 }

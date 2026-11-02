@@ -10,10 +10,8 @@ Updated: checkout() handles a complete sale from the Point of Sale screen: it ge
          totals and raises notifications.
 */
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import za.ac.cput.adp_assignment02.domain.Customer;
 import za.ac.cput.adp_assignment02.domain.Employee;
 import za.ac.cput.adp_assignment02.domain.Notification;
@@ -138,7 +136,9 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public Order create(Order order) {
-        validateCustomer(order);
+        if (order == null || Helper.isBlank(order.getCustomerId())) {
+            throw new IllegalArgumentException("A customer is required for an order.");
+        }
         if (Helper.isBlank(order.getOrderId())) {
             order.setOrderId(idGenerator.nextId(IdGeneratorService.ORDER, repository::existsById));
         }
@@ -173,16 +173,7 @@ public class OrderService implements IOrderService {
         if (order == null || Helper.isBlank(order.getOrderId()) || !repository.existsById(order.getOrderId())) {
             throw new NoSuchElementException("Order was not found.");
         }
-        validateCustomer(order);
         return repository.save(order);
-    }
-
-    /* Rocco Given Visagie: an order must belong to a customer that exists */
-    private void validateCustomer(Order order) {
-        String customerId = order == null ? null : order.getCustomerId();
-        if (customerId == null || customerId.isBlank() || !customerRepository.existsById(customerId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer does not exist: " + customerId);
-        }
     }
 
     /* Deleting (voiding) an order puts the stock back */

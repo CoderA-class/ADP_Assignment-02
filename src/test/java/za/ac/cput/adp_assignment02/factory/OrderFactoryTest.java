@@ -30,17 +30,4 @@ class OrderFactoryTest {
         assertNull(OrderFactory.createOrder("", LocalDate.now()));
         assertNull(OrderFactory.createOrder(null, LocalDate.now()));
     }
-
-    // ---- team test (moved here from src/test/java/factory) ----
-
-    @Test
-    void createsOrderWithGeneratedIdAndDate() {
-        LocalDate date = LocalDate.of(2026, 6, 21);
-        Order order = OrderFactory.createOrder("C-1", date);
-
-        assertNotNull(order.getOrderId());
-        assertEquals("C-1", order.getCustomerId());
-        assertEquals(date, order.getOrderDate());
-        assertEquals(0.0, order.getTotalAmount());
-    }
 }

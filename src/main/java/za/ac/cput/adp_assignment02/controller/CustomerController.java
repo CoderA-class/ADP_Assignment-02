@@ -8,7 +8,6 @@ Date: 10 August 2026
 */
 
 
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.adp_assignment02.domain.Customer;
@@ -32,7 +31,7 @@ public class CustomerController {
 
     /* The customer ID is generated automatically - leave custID empty */
     @PostMapping("/create")
-    public Customer create(@Valid @RequestBody Customer customer) {
+    public Customer create(@RequestBody Customer customer) {
         return customerService.create(customer);
     }
 
@@ -43,7 +42,7 @@ public class CustomerController {
     }
 
     @PutMapping("/update")
-    public Customer update(@Valid @RequestBody Customer customer) {
+    public Customer update(@RequestBody Customer customer) {
         return customerService.update(customer);
     }
 

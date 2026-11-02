@@ -28,6 +28,8 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <!-- Lets Mockito run the tests on newer JDKs too (e.g. Java 25 in Codespaces) -->
+        <argLine>-Dnet.bytebuddy.experimental=true</argLine>
     </properties>
 
     <dependencies>
@@ -65,12 +67,11 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- In-memory H2 database: used by the tests (so `mvn test` works without MySQL),
-             and can be used to run the app without MySQL by setting DB_URL (see application.properties) -->
+        <!-- In-memory database used only by the tests, so `mvn test` works without MySQL -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

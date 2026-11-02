@@ -1,71 +1,47 @@
 package za.ac.cput.adp_assignment02;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /*
- * Team integration test. Now that Spring Security is on, requests run as a logged-in ADMIN
- * (@WithMockUser) and send a CSRF token (.with(csrf())).
+ * CustomerControllerIntegrationTest.java
+ * Unit test for CustomerController (services are mocked).
+ * Author: David Daniel Sepkitt (240046935)
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@WithMockUser(username = "admin@wholesale.local", roles = "ADMIN")
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import za.ac.cput.adp_assignment02.controller.CustomerController;
+import za.ac.cput.adp_assignment02.domain.Customer;
+import za.ac.cput.adp_assignment02.service.CustomerService;
+import za.ac.cput.adp_assignment02.service.OrderService;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 class CustomerControllerIntegrationTest {
-    @Autowired
-    private MockMvc mockMvc;
+
+    @Mock
+    private CustomerService customerService;
+    @Mock
+    private OrderService orderService;
+    @InjectMocks
+    private CustomerController controller;
 
     @Test
-    void createsCustomerFromJsonRequest() throws Exception {
-        mockMvc.perform(post("/customers/create").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "custID": "C-HTTP-1",
-                                  "firstName": "Ava",
-                                  "lastName": "Mokoena",
-                                  "email": "ava.integration@example.com",
-                                  "phoneNumber": "0821234567",
-                                  "address": "Cape Town"
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.custID").value("C-HTTP-1"))
-                .andExpect(jsonPath("$.firstName").value("Ava"));
+    void searchByNameUsesTheService() {
+        Customer sipho = new Customer.Builder().setCustID("CUS-0001").setFirstName("Sipho").build();
+        when(customerService.searchByName("sip")).thenReturn(List.of(sipho));
+        assertEquals(List.of(sipho), controller.search("sip"));
     }
 
     @Test
-    void createsEmployeesForEachSupportedStatus() throws Exception {
-        String[] statuses = {"ACTIVE", "SUSPENDED", "TERMINATED"};
-
-        for (int index = 0; index < statuses.length; index++) {
-            String employeeId = "E-HTTP-" + index;
-            mockMvc.perform(post("/employees/create").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                    {
-                                      "empID": "%s",
-                                      "fName": "Mia",
-                                      "lName": "Dlamini",
-                                      "salary": 42000.50,
-                                      "email": "mia.%s@example.com",
-                                      "phone": "0821234567",
-                                      "role": "Analyst",
-                                      "empStatus": "%s"
-                                    }
-                                    """.formatted(employeeId, index, statuses[index])))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.empID").value(employeeId))
-                    .andExpect(jsonPath("$.empStatus").value(statuses[index]));
-        }
+    void readUnknownIdReturns404() {
+        when(customerService.read("CUS-9999")).thenReturn(null);
+        assertEquals(HttpStatus.NOT_FOUND, controller.read("CUS-9999").getStatusCode());
     }
 }

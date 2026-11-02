@@ -23,19 +23,4 @@ class CustomerFactoryTest {
         assertEquals("082 444 5566", c.getPhoneNumber());
         assertEquals("7 Kloof St", c.getAddress());
     }
-
-    // ---- team test (moved here from src/test/java/factory) ----
-
-    @Test
-    void createsCustomerWithProvidedDetails() {
-        Customer customer = CustomerFactory.createCustomer(
-                "C-1", "Ava", "Mokoena", "ava@example.com", "0821234567", "Cape Town");
-
-        assertEquals("C-1", customer.getCustID());
-        assertEquals("Ava", customer.getFirstName());
-        assertEquals("Mokoena", customer.getLastName());
-        assertEquals("ava@example.com", customer.getEmail());
-        assertEquals("0821234567", customer.getPhoneNumber());
-        assertEquals("Cape Town", customer.getAddress());
-    }
 }

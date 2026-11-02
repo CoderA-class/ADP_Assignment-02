@@ -1,14 +1,10 @@
 package za.ac.cput.adp_assignment02.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -24,7 +20,6 @@ import java.util.List;
 * Date: 23 March 2026
 * Updated: auto-generated order ID (ORD-0001), stores who processed the sale,
 *          the exact time of the sale and a snapshot of the customer's name.
-*          Real foreign keys to customer and order items (Rocco's referential-integrity fix).
 */
 
 @Entity
@@ -33,13 +28,8 @@ public class Order {
     @Id
     @Column(name = "orderId")
     private String orderId;
-    @Column(name = "customer_id", nullable = false)
+    @Column(nullable = false)
     private String customerId;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", insertable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "fk_order_customer"))
-    @JsonIgnore
-    private Customer customer;
     private String customerName;
     private String employeeId;
     private String employeeName;
@@ -48,7 +38,7 @@ public class Order {
     private LocalDateTime orderTime;
     @Column(nullable = false)
     private double totalAmount;
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>(); /* * Default constructor required by JPA. */
 
     public Order() {
