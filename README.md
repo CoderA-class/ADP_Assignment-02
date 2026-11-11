@@ -86,15 +86,7 @@ Built from the Blackboard *Security* notes (Chapter 9.6–9.7), using modern Jav
 | `SecurityContextHolder` (current user) | `security/CurrentUser.java` – employees can only see/change **their own** leave, shifts and notifications |
 | accessDenied.jsp | JSON messages (401 *Please sign in*, 403 *You don't have permission…*) shown in the app |
 
-**Who can do what**
 
-| | Admin | Employee |
-|---|---|---|
-| Dashboard, view products / customers / suppliers / orders | ✔ | ✔ |
-| New Sale (and add a customer during a sale) | ✔ | ✔ |
-| Request leave, clock in/out, own profile & password | ✔ | ✔ (own records only) |
-| Add / edit / delete products, suppliers, customers, orders | ✔ | ✘ |
-| Employees page, approve/decline leave, attendance register | ✔ | ✘ |
 
 CSRF protection is on: the token is kept in the `XSRF-TOKEN` cookie and the React app sends it in
 the `X-XSRF-TOKEN` header automatically.
