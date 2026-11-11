@@ -47,6 +47,10 @@ public class Employee {
     /* BCrypt hash of the employee's password */
     private String password;
 
+    /* true after an admin resets the password: the employee must pick a new one when they next sign in */
+    @Column(name = "must_change_password")
+    private Boolean mustChangePassword;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     private String imageUrl;
@@ -143,6 +147,16 @@ public class Employee {
 
     public void setEmpStatus(EmpStatus empStatus) {
         this.empStatus = empStatus;
+    }
+
+    @JsonProperty("mustChangePassword")
+    public boolean isMustChangePassword() {
+        return Boolean.TRUE.equals(mustChangePassword);
+    }
+
+    @JsonProperty("mustChangePassword")
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
     }
 
     public AccessLevel getAccessLevel() {

@@ -14,6 +14,8 @@ import java.time.temporal.ChronoUnit;
 /*
  * LeaveRequest.java
  * A leave request submitted by an employee and approved/declined by an admin.
+ * Author: Robyn Dominique Stevens (222201789)
+ * Date: 11 November 2026
  */
 @Entity
 @Table(name = "leave_request")

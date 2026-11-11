@@ -14,6 +14,7 @@ const KEY = 'stockflow.user';
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => storage.get(KEY));
   const [expired, setExpired] = useState(false);
+  const [signOutReason, setSignOutReason] = useState(null);   // e.g. 'SUSPENDED' when an admin bans the account
 
   const remember = useCallback((employee) => {
     if (employee) storage.set(KEY, employee); else storage.remove(KEY);
@@ -26,15 +27,20 @@ export function AuthProvider({ children }) {
     api.auth.me()
       .then((me) => alive && remember(me))
       .catch((err) => {
-        if (alive && err.status === 401) remember(null);   // offline? keep the cached user for now
+        if (alive && err.status === 401) {   // offline? keep the cached user for now
+          if (err.code === 'SUSPENDED') setSignOutReason('SUSPENDED');
+          remember(null);
+        }
       });
     return () => { alive = false; };
   }, [remember]);
 
   // Any 401 from the API = session ended
   useEffect(() => {
-    const onExpired = () => {
+    const onExpired = (e) => {
       if (storage.get(KEY)) setExpired(true);
+      // keep "suspended" even when the requests that follow come back as plain 401s
+      setSignOutReason((prev) => (e?.detail?.code === 'SUSPENDED' || prev === 'SUSPENDED' ? 'SUSPENDED' : e?.detail?.code || null));
       remember(null);
     };
     window.addEventListener('auth-expired', onExpired);
@@ -49,6 +55,7 @@ export function AuthProvider({ children }) {
       throw new Error('This account does not have admin access. Use the Employee login instead.');
     }
     setExpired(false);
+    setSignOutReason(null);
     remember(employee);
     return employee;
   }, [remember]);
@@ -62,10 +69,11 @@ export function AuthProvider({ children }) {
     user,
     isAdmin: user?.accessLevel === 'ADMIN',
     sessionExpired: expired,
+    signOutReason,
     login,
     logout,
     updateUser: remember
-  }), [user, expired, login, logout, remember]);
+  }), [user, expired, signOutReason, login, logout, remember]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

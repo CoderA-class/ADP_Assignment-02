@@ -8,7 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useApi } from '../hooks/useApi';
 import { api } from '../services/api';
-import { daysSince, formatDate, fullName, matches, money } from '../utils/format';
+import { balanceDue, daysSince, formatDate, formatDateTime, fullName, matches, money, paymentLabel, paymentStatus } from '../utils/format';
+import RecordPayment from '../components/RecordPayment';
 
 const activity = (c) => {
   const d = daysSince(c.lastPurchaseDate);
@@ -33,9 +34,10 @@ export default function Customers() {
   const spend = useMemo(() => {
     const map = {};
     (data?.orders || []).forEach((o) => {
-      map[o.customerId] = map[o.customerId] || { total: 0, count: 0 };
+      map[o.customerId] = map[o.customerId] || { total: 0, count: 0, owed: 0 };
       map[o.customerId].total += o.totalAmount;
       map[o.customerId].count += 1;
+      map[o.customerId].owed += balanceDue(o);
     });
     return map;
   }, [data]);
@@ -45,13 +47,14 @@ export default function Customers() {
     all: customers.length,
     active: customers.filter((c) => activity(c).key === 'active').length,
     inactive: customers.filter((c) => activity(c).key === 'inactive').length,
-    new: customers.filter((c) => activity(c).key === 'new').length
-  }), [customers]);
+    new: customers.filter((c) => activity(c).key === 'new').length,
+    owing: customers.filter((c) => (spend[c.custID]?.owed || 0) > 0.001).length
+  }), [customers, spend]);
 
   const rows = useMemo(() => customers
-    .filter((c) => filter === 'all' || activity(c).key === filter)
+    .filter((c) => filter === 'all' || (filter === 'owing' ? (spend[c.custID]?.owed || 0) > 0.001 : activity(c).key === filter))
     .filter((c) => (query.mode === 'id' ? matches(query.text, c.custID) : matches(query.text, fullName(c), c.company, c.phoneNumber, c.email)))
-    .sort((a, b) => fullName(a).localeCompare(fullName(b))), [customers, filter, query]);
+    .sort((a, b) => fullName(a).localeCompare(fullName(b))), [customers, filter, query, spend]);
 
   const lookUpId = async (id) => {
     try { setViewing(await api.customers.read(id)); } catch { toast.warning('Not found', `There is no customer with ID ${id}.`); }
@@ -68,7 +71,7 @@ export default function Customers() {
 
   return (
     <>
-      <PageHeader eyebrow="People" title="Customers" subtitle="Everyone who buys from you – search by name, or switch to ID.">
+      <PageHeader eyebrow="People" title="Customers" subtitle="Your trade customers and spaza shops, what they buy and what they owe on account.">
         {isAdmin
           ? <button className="btn btn-primary" onClick={() => setEditing({})}><Icon name="userPlus" size={17} /> Add customer</button>
           : <span className="small muted">New customers can be added from the New Sale screen.</span>}
@@ -78,7 +81,8 @@ export default function Customers() {
         <StatCard icon="users" tone="blue" label="Total customers" value={counts.all} />
         <StatCard icon="checkCircle" tone="green" label="Active (30 days)" value={counts.active} />
         <StatCard icon="alert" tone="violet" label="Inactive" value={counts.inactive} foot="No purchase in 30+ days" />
-        <StatCard icon="user" tone="cyan" label="Not bought yet" value={counts.new} />
+        <StatCard icon="clipboard" tone={counts.owing ? 'amber' : 'cyan'} label="Owed on account" value={money(Object.values(spend).reduce((s, x) => s + x.owed, 0))}
+          foot={counts.owing ? `${counts.owing} customer${counts.owing === 1 ? '' : 's'} owe you` : 'All accounts settled'} />
       </div>
 
       <div className="card">
@@ -87,7 +91,7 @@ export default function Customers() {
             getImage={(c) => c.imageUrl} placeholder="Search customers by name or shop…" idPlaceholder="Enter customer ID, e.g. CUS-0001"
             onQueryChange={(text, mode) => setQuery({ text, mode })} onSelect={setViewing} onIdSearch={lookUpId} />
           <div className="chips">
-            {[['all', 'All'], ['active', 'Active'], ['inactive', 'Inactive'], ['new', 'No purchases']].map(([k, l]) => (
+            {[['all', 'All'], ['owing', 'Owes money'], ['active', 'Active'], ['inactive', 'Inactive'], ['new', 'No purchases']].map(([k, l]) => (
               <button key={k} className={`chip${filter === k ? ' active' : ''}`} onClick={() => setFilter(k)}>{l} <span className="count">{counts[k]}</span></button>
             ))}
           </div>
@@ -99,7 +103,7 @@ export default function Customers() {
         ) : (
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th>Customer</th><th>Contact</th><th>Status</th><th className="num">Orders</th><th className="num">Total spent</th><th>Customer since</th><th /></tr></thead>
+              <thead><tr><th>Customer</th><th>Contact</th><th>Status</th><th className="num">Orders</th><th className="num">Total spent</th><th className="num">Owes</th><th>Customer since</th><th /></tr></thead>
               <tbody>
                 {rows.map((c) => {
                   const a = activity(c);
@@ -110,6 +114,7 @@ export default function Customers() {
                       <td><Badge tone={a.tone}>{a.label}</Badge></td>
                       <td className="num">{spend[c.custID]?.count || 0}</td>
                       <td className="num bold">{money(spend[c.custID]?.total || 0)}</td>
+                      <td className="num">{(spend[c.custID]?.owed || 0) > 0.001 ? <span className="owes">{money(spend[c.custID].owed)}</span> : <span className="muted">—</span>}</td>
                       <td>{formatDate(c.createdDate)}</td>
                       <td className="actions" onClick={(e) => e.stopPropagation()}>
                         {isAdmin && <button className="icon-btn" title="Edit" onClick={() => setEditing(c)}><Icon name="edit" size={16} /></button>}
@@ -133,9 +138,17 @@ export default function Customers() {
 
 function CustomerDrawer({ customer: c, onClose, onEdit }) {
   const navigate = useNavigate();
-  const { data: orders, loading } = useApi(() => api.customers.orders(c.custID), [c.custID]);
+  const { data, loading, reload } = useApi(async () => {
+    const [orders, payments] = await Promise.all([api.customers.orders(c.custID), api.payments.forCustomer(c.custID).catch(() => [])]);
+    return { orders, payments };
+  }, [c.custID]);
+  const [paying, setPaying] = useState(null);
+  const orders = data?.orders;
+  const payments = data?.payments || [];
   const a = activity(c);
   const total = (orders || []).reduce((s, o) => s + o.totalAmount, 0);
+  const owing = (orders || []).filter((o) => balanceDue(o) > 0);
+  const owed = owing.reduce((s, o) => s + balanceDue(o), 0);
   return (
     <Drawer title="Customer details" onClose={onClose}
       footer={<>
@@ -156,6 +169,24 @@ function CustomerDrawer({ customer: c, onClose, onEdit }) {
         <dt>Last purchase</dt><dd>{formatDate(c.lastPurchaseDate)}</dd>
         <dt>Total spent</dt><dd className="bold">{money(total)}</dd>
       </dl>
+      <div className={`account-box mt-4${owed > 0 ? ' owing' : ''}`}>
+        <div className="row-flex between"><span className="bold">Account balance</span><span className={`bold${owed > 0 ? ' text-danger' : ' text-success'}`}>{owed > 0 ? `${money(owed)} owed` : 'Settled'}</span></div>
+        {owing.map((o) => (
+          <div key={o.orderId} className="row-flex between small mt-2">
+            <span><span className="mono">{o.orderId}</span> · {formatDate(o.orderDate)} · <Badge tone={paymentStatus(o).tone}>{paymentStatus(o).label}</Badge></span>
+            <span className="row-flex" style={{ gap: 8 }}><span className="bold">{money(balanceDue(o))}</span><button className="btn btn-secondary btn-sm" onClick={() => setPaying(o)}>Record payment</button></span>
+          </div>
+        ))}
+        {payments.length > 0 && (
+          <div className="pay-history">
+            <div className="small muted bold mt-3">Recent payments</div>
+            {payments.slice(0, 5).map((p) => (
+              <div key={p.id} className="row-flex between small"><span>{formatDateTime(p.paidAt)} · {paymentLabel(p.method)} · <span className="mono">{p.orderId}</span></span><span className="bold">{money(p.amount)}</span></div>
+            ))}
+          </div>
+        )}
+      </div>
+      {paying && <RecordPayment order={paying} customerName={fullName(c)} onClose={() => setPaying(null)} onPaid={() => reload({ silent: true })} />}
       <div className="divider" />
       <h4 style={{ fontSize: 14, marginBottom: 8 }}>Order history</h4>
       {loading ? <Loading /> : (orders || []).length === 0 ? <p className="muted small">No orders yet.</p> : (
@@ -163,7 +194,7 @@ function CustomerDrawer({ customer: c, onClose, onEdit }) {
           {orders.map((o) => (
             <div className="list-row" key={o.orderId} style={{ padding: '10px 14px' }}>
               <div className="grow"><div className="t mono">{o.orderId}</div><div className="s">{formatDate(o.orderDate)} · {(o.orderItems || []).length} item(s)</div></div>
-              <div className="bold tabular">{money(o.totalAmount)}</div>
+              <div style={{ textAlign: 'right' }}><div className="bold tabular">{money(o.totalAmount)}</div><div className="small muted">{o.paymentMethod ? paymentLabel(o.paymentMethod) : 'Paid'}</div></div>
             </div>
           ))}
         </div>

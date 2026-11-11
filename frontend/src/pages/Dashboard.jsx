@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../components/Icons';
 import { BarChart, Donut } from '../components/Charts';
-import { Avatar, Badge, EmptyState, ErrorState, Loading, StatCard } from '../components/ui';
+import { Avatar, Badge, EmptyState, ErrorState, Loading, StatCard, useCategoryVersion } from '../components/ui';
 import NoticeBoard from '../components/NoticeBoard';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
@@ -10,14 +10,16 @@ import { api } from '../services/api';
 import { categoryColor, categoryIcon, colorFor, daysSince, formatDate, fullName, money, number, stockStatus, toDate } from '../utils/format';
 
 export default function Dashboard() {
+  useCategoryVersion();   // tiles follow the category colours the admin picked
   const { user, isAdmin } = useAuth();
     const { data, loading, error, reload } = useApi(async () => {
-    const [products, customers, orders, leave, employees] = await Promise.all([
+    const [products, customers, orders, leave, employees, alerts] = await Promise.all([
       api.products.all(), api.customers.all(), api.orders.all(),
       isAdmin ? api.leave.all() : api.leave.forEmployee(user.empID),
-      isAdmin ? api.employees.all() : Promise.resolve([])
+      isAdmin ? api.employees.all() : Promise.resolve([]),
+      api.stockAlerts.list().catch(() => [])
     ]);
-    return { products, customers, orders, leave, employees };
+    return { products, customers, orders, leave, employees, alerts };
   }, [isAdmin, user.empID]);
 
   const stats = useMemo(() => {
@@ -84,10 +86,20 @@ export default function Dashboard() {
 
   const pendingLeave = data.leave.filter((l) => l.status === 'PENDING');
   const autoNotes = [];
-  if (stats.low.length) autoNotes.push({ key: 'low', color: 'peach', icon: 'alert', title: 'Restock soon', text: `${stats.low.slice(0, 3).map((p) => p.name).join(', ')}${stats.low.length > 3 ? ` and ${stats.low.length - 3} more` : ''} ${stats.low.length === 1 ? 'is' : 'are'} at or below the re-order level.`, link: '/products', state: { filter: 'low' }, linkLabel: 'Restock list' });
+  if (stats.low.length) autoNotes.push({ key: 'low', color: 'peach', icon: 'alert', title: 'Restock soon', text: `${stats.low.slice(0, 3).map((p) => p.name).join(', ')}${stats.low.length > 3 ? ` and ${stats.low.length - 3} more` : ''} ${stats.low.length === 1 ? 'is' : 'are'} at or below the re-order level.`, link: '/products', state: { filter: 'low' }, linkLabel: isAdmin ? 'Restock list' : 'Alert admin' });
+  const openAlerts = (data.alerts || []).filter((a) => a.status !== 'RESOLVED');
+  if (isAdmin && openAlerts.length) autoNotes.unshift({ key: 'alerts', color: 'yellow', icon: 'bullhorn', title: 'Staff stock alerts', text: `${[...new Set(openAlerts.map((a) => a.raisedByName.split(' ')[0]))].slice(0, 2).join(' & ')} flagged ${openAlerts.slice(0, 2).map((a) => a.productName).join(', ')}${openAlerts.length > 2 ? ` and ${openAlerts.length - 2} more` : ''}.`, link: '/products', linkLabel: 'Review alerts' });
+  const myAlerts = openAlerts.filter((a) => a.raisedById === user.empID);
+  if (!isAdmin && myAlerts.length) autoNotes.push({ key: 'myalerts', color: 'sky', icon: 'bullhorn', title: 'You alerted the admin', text: `${myAlerts.map((a) => a.productName).slice(0, 2).join(', ')}${myAlerts.length > 2 ? ` and ${myAlerts.length - 2} more` : ''} – ${myAlerts.some((a) => a.status === 'ACKNOWLEDGED') ? 'an admin is on it' : 'waiting for an admin'}.`, link: '/products', linkLabel: 'View' });
   if (isAdmin && pendingLeave.length) autoNotes.push({ key: 'leave', color: 'mint', icon: 'calendar', title: 'Leave to approve', text: `${pendingLeave.length} request${pendingLeave.length === 1 ? '' : 's'} from ${[...new Set(pendingLeave.map((l) => l.employeeName))].slice(0, 2).join(' & ')}.`, link: '/leave', linkLabel: 'Review' });
   if (!isAdmin && pendingLeave.length) autoNotes.push({ key: 'myleave', color: 'mint', icon: 'calendar', title: 'Leave pending', text: `You have ${pendingLeave.length} leave request${pendingLeave.length === 1 ? '' : 's'} waiting for approval.`, link: '/leave', linkLabel: 'View' });
   if (stats.inactive.length) autoNotes.push({ key: 'inactive', color: 'lilac', icon: 'phone', title: 'Give them a call', text: `${stats.inactive.length} customer${stats.inactive.length === 1 ? " hasn't" : "s haven't"} bought anything in over 30 days.`, link: '/customers', linkLabel: 'Customers' });
+  const owedOrders = (data.orders || []).filter((o) => (o.balanceDue || 0) > 0);
+  if (isAdmin && owedOrders.length) {
+    const owedTotal = owedOrders.reduce((s, o) => s + o.balanceDue, 0);
+    const owedPeople = [...new Set(owedOrders.map((o) => o.customerName))];
+    autoNotes.push({ key: 'owed', color: 'yellow', icon: 'clipboard', title: 'Money owed on account', text: `${money(owedTotal)} still to collect from ${owedPeople.slice(0, 2).join(' & ')}${owedPeople.length > 2 ? ` and ${owedPeople.length - 2} more` : ''}.`, link: '/orders', state: { pay: 'owing' }, linkLabel: 'Collect' });
+  }
   if (!autoNotes.length) autoNotes.push({ key: 'ok', color: 'sky', icon: 'smile', title: 'All clear', text: 'No stock, leave or customer alerts right now. Nice work!' });
   const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
 
@@ -117,10 +129,10 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-4">
-        <StatCard icon="money" tone="cyan" label="Sales today" value={money(stats.todayRevenue)} trend={stats.todayTrend} trendLabel="vs yesterday" />
-        <StatCard icon="chartLine" tone="blue" label="This month" value={money(stats.monthRevenue)} trend={stats.monthTrend} trendLabel="vs last month" />
-        <StatCard icon="receipt" tone="violet" label="Orders today" value={stats.todayCount} spark={stats.ordersPerDay} sparkColor="var(--violet)" foot={`Avg. order ${money(stats.avgOrder)}`} />
-        <StatCard icon="alert" tone={stats.low.length ? 'amber' : 'green'} label="Low / out of stock" value={stats.low.length} foot={stats.low.length ? 'Needs attention' : 'All good'} />
+        <StatCard icon="money" tone="cyan" label="Sales today" value={money(stats.todayRevenue)} trend={stats.todayTrend} trendLabel="vs yesterday" to="/orders" state={{ range: 'today' }} />
+        <StatCard icon="chartLine" tone="blue" label="This month" value={money(stats.monthRevenue)} trend={stats.monthTrend} trendLabel="vs last month" to="/orders" state={{ range: '30' }} />
+        <StatCard icon="receipt" tone="violet" label="Orders today" value={stats.todayCount} spark={stats.ordersPerDay} sparkColor="var(--violet)" foot={`Avg. order ${money(stats.avgOrder)}`} to="/orders" state={{ range: 'today' }} />
+        <StatCard icon={stats.low.length ? 'alert' : 'checkCircle'} tone={stats.low.length ? 'red' : 'green'} label="Low / out of stock" value={stats.low.length} foot={stats.low.length ? 'Needs attention' : 'All good'} to="/products" state={{ filter: 'low' }} />
       </div>
 
       <div className="card">

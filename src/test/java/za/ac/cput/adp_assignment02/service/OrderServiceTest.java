@@ -81,7 +81,9 @@ class OrderServiceTest {
         assertEquals(2, order.getOrderItems().size());
         assertEquals(3, order.getOrderItems().get(0).getQuantity());
         assertEquals(47.97, order.getOrderItems().get(0).getLineTotal(), 0.001);
-        assertEquals(72.47, order.getTotalAmount(), 0.001);
+        assertEquals(72.47, order.getSubtotal(), 0.001);
+        assertEquals(10.87, order.getVatAmount(), 0.001);          // 15% VAT
+        assertEquals(83.34, order.getTotalAmount(), 0.001);        // subtotal + VAT
         assertEquals(47, bread.getQuantity());
         assertEquals(2, cola.getQuantity());
         assertEquals(LocalDate.now(), customer.getLastPurchaseDate());

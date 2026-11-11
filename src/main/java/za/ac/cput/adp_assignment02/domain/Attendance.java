@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 /*
  * Attendance.java
  * One clock-in / clock-out shift for an employee.
+ * Author: David Daniel Sepkitt (240046935)
+ * Date: 11 November 2026
  */
 @Entity
 @Table(name = "attendance")

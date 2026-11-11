@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../components/Icons';
 import CustomerForm from '../components/CustomerForm';
 import { APP_NAME } from '../components/Layout';
-import { Avatar, EmptyState, ErrorState, Highlight, Loading, Modal, ProductImage } from '../components/ui';
+import { Avatar, EmptyState, ErrorState, Highlight, Loading, Modal, ProductImage, useCategoryVersion } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useApi } from '../hooks/useApi';
 import { api } from '../services/api';
-import { categoryColor, categoryIcon, colorFor, formatDateTime, fullName, matches, money, stockStatus } from '../utils/format';
+import { categoryColor, categoryIcon, colorFor, formatDateTime, fullName, matches, money, stockStatus, orderBreakdown, withVat, PAYMENT_METHODS, paymentLabel } from '../utils/format';
 
 /*
  * Point of Sale – "New Sale"
@@ -18,13 +18,14 @@ import { categoryColor, categoryIcon, colorFor, formatDateTime, fullName, matche
  *  4. Complete sale → the backend creates the order, items and IDs and reduces stock
  */
 export default function PointOfSale() {
+  useCategoryVersion();   // tiles follow the category colours the admin picked
   const { user } = useAuth();
   const toast = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const { data, loading, error, reload, setData } = useApi(async () => {
-    const [products, customers] = await Promise.all([api.products.all(), api.customers.all()]);
-    return { products, customers };
+    const [products, customers, balances] = await Promise.all([api.products.all(), api.customers.all(), api.payments.balances().catch(() => ({}))]);
+    return { products, customers, balances };
   });
   const [customerId, setCustomerId] = useState(location.state?.customerId || '');
   const [cart, setCart] = useState([]); // [{ productId, quantity }]
@@ -33,10 +34,13 @@ export default function PointOfSale() {
   const [addingCustomer, setAddingCustomer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [payment, setPayment] = useState('CASH');
+  const [tendered, setTendered] = useState('');   // cash handed over, to work out change
   const searchRef = useRef(null);
 
   const products = data?.products || [];
   const customers = data?.customers || [];
+  const accountBalances = data?.balances || {};
   const productById = useMemo(() => Object.fromEntries(products.map((p) => [p.id, p])), [products]);
   const customer = customers.find((c) => c.custID === customerId);
   const categories = useMemo(() => ['All', ...[...new Set(products.map((p) => p.category || 'General'))].sort()], [products]);
@@ -51,7 +55,8 @@ export default function PointOfSale() {
     return p ? { ...l, product: p, lineTotal: Math.round(p.price * l.quantity * 100) / 100 } : null;
   }).filter(Boolean);
   const itemCount = lines.reduce((s, l) => s + l.quantity, 0);
-  const grandTotal = lines.reduce((s, l) => s + l.lineTotal, 0);
+  const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
+  const { vat, total: grandTotal } = withVat(subtotal);
 
   const qtyInCart = (id) => cart.find((l) => l.productId === id)?.quantity || 0;
 
@@ -89,10 +94,12 @@ export default function PointOfSale() {
     if (!lines.length) { toast.error('Cart is empty', 'Add at least one product.'); return; }
     setBusy(true);
     try {
-      const order = await api.orders.checkout({ customerId, employeeId: user.empID, items: cart });
-      setReceipt({ order, customer });
+      const order = await api.orders.checkout({ customerId, employeeId: user.empID, items: cart, paymentMethod: payment });
+      setReceipt({ order, customer, tendered: payment === 'CASH' ? Number(tendered) || null : null });
       setCart([]);
-      toast.success('Sale completed', `${order.orderId} · ${money(order.totalAmount)}`);
+      setTendered('');
+      toast.success(payment === 'ACCOUNT' ? 'Sale put on account' : 'Sale completed',
+        `${order.orderId} · ${money(order.totalAmount)}${payment === 'ACCOUNT' ? ` added to ${fullName(customer)}'s account` : ''}`);
       reload({ silent: true });
     } catch (err) {
       toast.error('Sale not completed', err.message);
@@ -134,7 +141,7 @@ export default function PointOfSale() {
                 const inCart = qtyInCart(p.id);
                 const s = stockStatus(p);
                 return (
-                  <button key={p.id} className="pos-item" onClick={() => add(p)} disabled={p.quantity <= 0} title={p.name}>
+                  <button key={p.id} className={`pos-item${inCart > 0 ? ' in-cart-item' : ''}`} style={{ '--cat': categoryColor(p.category) }} onClick={() => add(p)} disabled={p.quantity <= 0} title={p.name}>
                     {inCart > 0 && <span className="in-cart">{inCart} in cart</span>}
                     <div className="thumb"><ProductImage src={p.imageUrl} name={p.name} category={p.category} iconSize={22} /></div>
                     <div className="info">
@@ -191,10 +198,43 @@ export default function PointOfSale() {
           </div>
           <div className="totals">
             <div className="row"><span>Items</span><span>{itemCount}</span></div>
-            <div className="row"><span>Subtotal</span><span>{money(grandTotal)}</span></div>
+            <div className="row"><span>Subtotal (excl. VAT)</span><span>{money(subtotal)}</span></div>
+            <div className="row"><span>VAT 15%</span><span>{money(vat)}</span></div>
             <div className="row grand"><span>Grand total</span><span>{money(grandTotal)}</span></div>
-            <button className="btn btn-primary btn-lg btn-block mt-3" onClick={complete} disabled={busy || !lines.length || !customer}>
-              {busy ? 'Completing sale…' : <><Icon name="check" size={18} /> Complete sale · {money(grandTotal)}</>}
+
+            <div className="pay-block">
+              <div className="pay-label">Payment method</div>
+              <div className="pay-methods" role="radiogroup" aria-label="Payment method">
+                {PAYMENT_METHODS.map((m) => (
+                  <button key={m.key} type="button" role="radio" aria-checked={payment === m.key} className={`pay-method${payment === m.key ? ' on' : ''}`} onClick={() => setPayment(m.key)}>
+                    <Icon name={m.icon} size={14} /> {m.label}
+                  </button>
+                ))}
+              </div>
+              {payment === 'CASH' && (
+                <div className="pay-cash">
+                  <label htmlFor="tendered">Cash received</label>
+                  <div className="input-prefix"><span>R</span><input id="tendered" className="input" type="number" min="0" step="0.01" value={tendered} onChange={(e) => setTendered(e.target.value)} placeholder={grandTotal.toFixed(2)} /></div>
+                  {Number(tendered) > 0 && (
+                    Number(tendered) >= grandTotal
+                      ? <div className="pay-change"><span>Change</span><strong>{money(Number(tendered) - grandTotal)}</strong></div>
+                      : <div className="pay-change short"><span>Still to pay</span><strong>{money(grandTotal - Number(tendered))}</strong></div>
+                  )}
+                </div>
+              )}
+              {payment === 'ACCOUNT' && customer && (
+                <div className="pay-account">
+                  <Icon name="clipboard" size={14} />
+                  <span>Added to <strong>{fullName(customer)}</strong>'s account to pay later.{(accountBalances[customer.custID] || 0) > 0 && <> They already owe <strong>{money(accountBalances[customer.custID])}</strong>.</>}</span>
+                </div>
+              )}
+            </div>
+
+            <button className="btn btn-primary btn-lg btn-block mt-3" onClick={complete}
+              disabled={busy || !lines.length || !customer || (payment === 'CASH' && Number(tendered) > 0 && Number(tendered) < grandTotal)}>
+              {busy ? 'Completing sale…' : payment === 'ACCOUNT'
+                ? <><Icon name="clipboard" size={17} /> Put on account · {money(grandTotal)}</>
+                : <><Icon name="check" size={18} /> Complete sale · {money(grandTotal)}</>}
             </button>
             {!customer && lines.length > 0 && <div className="small text-warning mt-2 row-flex"><Icon name="alert" size={14} /> Choose a customer to complete the sale.</div>}
           </div>
@@ -280,20 +320,23 @@ function CustomerPicker({ customers, value, onChange, onAddNew }) {
 }
 
 function ReceiptModal({ receipt, cashier, onClose, onViewOrders }) {
-  const { order, customer } = receipt;
+  const { order, customer, tendered } = receipt;
+  const onAccount = order.paymentMethod === 'ACCOUNT';
   return (
-    <Modal title="Sale completed" onClose={onClose} size="sm"
+    <Modal title={onAccount ? 'Sale put on account' : 'Sale completed'} onClose={onClose} size="sm"
       footer={<>
         <button className="btn btn-secondary" onClick={onViewOrders}>View orders</button>
         <button className="btn btn-secondary" onClick={() => window.print()}><Icon name="printer" size={16} /> Print</button>
         <button className="btn btn-primary" onClick={onClose}>New sale</button>
       </>}>
       <div className="receipt print-area">
-        <div className="stamp">PAID</div>
+        <div className={`stamp${onAccount ? ' stamp-account' : ''}`} aria-label={onAccount ? 'On account' : 'Paid'}>
+          <span>{onAccount ? 'ON ACCOUNT' : 'PAID'}</span><small>{formatDateTime(order.orderTime || order.orderDate)}</small>
+        </div>
         <div className="r-head">
           <div className="success-check"><Icon name="check" size={28} /></div>
           <h3>{APP_NAME}</h3>
-          <div className="muted small">Tax invoice / receipt</div>
+          <div className="muted small">Wholesale · Tax invoice</div>
           <div className="mono mt-2">{order.orderId}</div>
           <div className="small muted">{formatDateTime(order.orderTime || order.orderDate)}</div>
         </div>
@@ -312,9 +355,32 @@ function ReceiptModal({ receipt, cashier, onClose, onViewOrders }) {
             ))}
           </tbody>
         </table>
-        <div className="r-total"><span>Grand total</span><span>{money(order.totalAmount)}</span></div>
+        <ReceiptTotals order={order} />
+        <div className="r-pay">
+          <div><span>Payment</span><span className="bold">{paymentLabel(order.paymentMethod)}</span></div>
+          {order.paymentMethod === 'CASH' && tendered >= order.totalAmount && <>
+            <div><span>Cash received</span><span>{money(tendered)}</span></div>
+            <div><span>Change</span><span className="bold">{money(tendered - order.totalAmount)}</span></div>
+          </>}
+          {onAccount && <div className="r-owed"><span>Balance due</span><span>{money(order.balanceDue ?? order.totalAmount)}</span></div>}
+        </div>
         <p className="small muted mt-3" style={{ textAlign: 'center' }}>Thank you for your business!</p>
       </div>
     </Modal>
+  );
+}
+
+function ReceiptTotals({ order }) {
+  const b = orderBreakdown(order);
+  return (
+    <>
+      {b.vat != null && (
+        <div className="r-sub">
+          <div><span>Subtotal (excl. VAT)</span><span>{money(b.subtotal)}</span></div>
+          <div><span>VAT @ 15%</span><span>{money(b.vat)}</span></div>
+        </div>
+      )}
+      <div className="r-total"><span>Total{b.vat != null ? ' (incl. VAT)' : ''}</span><span>{money(b.total)}</span></div>
+    </>
   );
 }

@@ -10,10 +10,11 @@
 const BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '/adp-assignment').replace(/\/$/, '');
 
 export class ApiError extends Error {
-  constructor(message, status, offline = false) {
+  constructor(message, status, offline = false, code = null) {
     super(message);
     this.status = status;
     this.offline = offline;
+    this.code = code;
   }
 }
 
@@ -24,8 +25,8 @@ function csrfToken() {
 }
 
 /* Any 401 from the server means the login session has ended */
-function sessionExpired() {
-  window.dispatchEvent(new Event('auth-expired'));
+function sessionExpired(detail = {}) {
+  window.dispatchEvent(new CustomEvent('auth-expired', { detail }));
 }
 
 export async function request(path, { method = 'GET', body, query, form, retried = false } = {}) {
@@ -74,12 +75,12 @@ export async function request(path, { method = 'GET', body, query, form, retried
       try { await fetch(`${BASE_URL}/health`, { credentials: 'include' }); } catch { /* ignore */ }
       return request(path, { method, body, query, form, retried: true });
     }
-    if (response.status === 401 && path !== '/auth/login' && path !== '/auth/me') sessionExpired();
+    if (response.status === 401 && path !== '/auth/login' && path !== '/auth/me') sessionExpired({ code: data?.code, message: data?.message });
     const offline = response.status === 502 || response.status === 503 || response.status === 504 || (data && data.offline);
     const message = (data && typeof data === 'object' && data.message)
       || (offline ? 'Cannot reach the server. Is the backend running?' : null)
       || (response.status === 404 ? 'Not found.' : `Request failed (${response.status}).`);
-    throw new ApiError(message, response.status, offline);
+    throw new ApiError(message, response.status, offline, data && typeof data === 'object' ? data.code : null);
   }
   return data;
 }
@@ -107,6 +108,7 @@ export const api = {
     logout: () => request('/auth/logout', { method: 'POST' }),
     me: () => request('/auth/me'),
     updateMe: (changes) => request('/auth/me', { method: 'PUT', body: changes }),
+    forgotPassword: (email) => request('/auth/forgot-password', { method: 'POST', body: { email } }),
     changePassword: (currentPassword, newPassword) =>
       request('/auth/change-password', { method: 'POST', body: { currentPassword, newPassword } })
   },
@@ -115,15 +117,41 @@ export const api = {
     ...crud('/customers'),
     orders: (id) => request(`/customers/${encodeURIComponent(id)}/orders`)
   },
-  employees: crud('/employees'),
+  employees: {
+    ...crud('/employees'),
+    ban: (id) => request(`/employees/${encodeURIComponent(id)}/ban`, { method: 'PUT' }),
+    unban: (id) => request(`/employees/${encodeURIComponent(id)}/unban`, { method: 'PUT' }),
+    resetPassword: (id) => request(`/employees/${encodeURIComponent(id)}/reset-password`, { method: 'POST' })
+  },
   suppliers: crud('/suppliers'),
   products: {
     ...crud('/products'),
     restock: (id, amount) => request(`/products/${encodeURIComponent(id)}/restock`, { method: 'PUT', query: { amount } })
   },
+  // stock categories the admin manages (icon + colour for the product pictures)
+  categories: {
+    all: () => request('/categories'),
+    create: (category) => request('/categories', { method: 'POST', body: category }),
+    update: (id, category) => request(`/categories/${id}`, { method: 'PUT', body: category }),
+    remove: (id) => request(`/categories/${id}`, { method: 'DELETE' })
+  },
+  // employees tell the admins a product is running low; admins acknowledge or close the alert
+  stockAlerts: {
+    list: () => request('/stock-alerts'),
+    raise: (productId, note) => request('/stock-alerts', { method: 'POST', body: { productId, note } }),
+    acknowledge: (id) => request(`/stock-alerts/${id}/acknowledge`, { method: 'PUT' }),
+    resolve: (id, resolution) => request(`/stock-alerts/${id}/resolve`, { method: 'PUT', body: { resolution } })
+  },
   orders: {
     ...crud('/orders'),
-    checkout: (payload) => request('/orders/checkout', { method: 'POST', body: payload })
+    checkout: (payload) => request('/orders/checkout', { method: 'POST', body: payload }),
+    pay: (orderId, amount, method, note) => request(`/payments/order/${encodeURIComponent(orderId)}`, { method: 'POST', body: { amount, method, note } })
+  },
+  payments: {
+    all: () => request('/payments'),
+    forOrder: (id) => request(`/payments/order/${encodeURIComponent(id)}`),
+    forCustomer: (id) => request(`/payments/customer/${encodeURIComponent(id)}`),
+    balances: () => request('/payments/balances')
   },
 
   leave: {

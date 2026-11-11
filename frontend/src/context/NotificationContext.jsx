@@ -68,5 +68,8 @@ export const NOTIFICATION_META = {
   CLOCK_IN: { icon: 'clock', tone: 'green', link: '/attendance' },
   CLOCK_OUT: { icon: 'clock', tone: 'cyan', link: '/attendance' },
   NEW_SALE: { icon: 'receipt', tone: 'blue', link: '/orders' },
+  STOCK_ALERT: { icon: 'bullhorn', tone: 'amber', link: '/products' },
+  STOCK_ALERT_UPDATE: { icon: 'checkCircle', tone: 'green', link: '/products' },
+  PASSWORD_RESET: { icon: 'lock', tone: 'violet', link: '/employees' },
   SYSTEM: { icon: 'info', tone: 'blue', link: '/notifications' }
 };

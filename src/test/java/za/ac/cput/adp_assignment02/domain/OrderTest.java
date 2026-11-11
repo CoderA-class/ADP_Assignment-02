@@ -52,4 +52,13 @@ class OrderTest {
         Order empty = new Order.Builder().setOrderId("ORD-0002").setCustomerId("CUS-0001").build();
         assertEquals(0.0, empty.calculateTotal(), 0.001);
     }
+
+    @Test
+    void vatIsAddedOnTopOfTheSubtotal() {
+        Order o = new Order();
+        o.applyVat(431.00, 0.15);
+        assertEquals(431.00, o.getSubtotal(), 0.001);
+        assertEquals(64.65, o.getVatAmount(), 0.001);
+        assertEquals(495.65, o.getTotalAmount(), 0.001);
+    }
 }

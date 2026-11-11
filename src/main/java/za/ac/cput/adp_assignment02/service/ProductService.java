@@ -67,7 +67,9 @@ public class ProductService implements IProductService {
         }
         Product product = repository.findById(id).orElseThrow(() -> new NoSuchElementException("Product was not found."));
         product.setQuantity(product.getQuantity() + amount);
-        return repository.save(product);
+        Product saved = repository.save(product);
+        notificationService.checkStock(saved);
+        return saved;
     }
 
     @Override

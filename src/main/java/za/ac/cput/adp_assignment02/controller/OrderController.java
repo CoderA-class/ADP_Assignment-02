@@ -34,7 +34,7 @@ public class OrderController {
     @PostMapping("/checkout")
     public Order checkout(@RequestBody CheckoutRequest request) {
         String cashier = currentUser.employee().map(e -> e.getEmpID()).orElse(null);
-        return orderService.checkout(new CheckoutRequest(request.customerId(), cashier, request.items()));
+        return orderService.checkout(new CheckoutRequest(request.customerId(), cashier, request.items(), request.paymentMethod()));
     }
 
     @PostMapping("/create")

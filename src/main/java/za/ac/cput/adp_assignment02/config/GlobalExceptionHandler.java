@@ -1,5 +1,8 @@
 package za.ac.cput.adp_assignment02.config;
 
+
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -45,6 +48,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> unreadable(HttpMessageNotReadableException ex) {
         return error(HttpStatus.BAD_REQUEST, "Some of the information sent was in the wrong format.");
+    }
+
+    /* A database problem: log the details for the developer, show a readable message in the app */
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<Map<String, String>> database(DataAccessException ex) {
+        LoggerFactory.getLogger(GlobalExceptionHandler.class).error("Database error", ex);
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "The database couldn't save that. Restart the app once so it can update its tables, then try again.");
     }
 
     private ResponseEntity<Map<String, String>> error(HttpStatus status, String message) {

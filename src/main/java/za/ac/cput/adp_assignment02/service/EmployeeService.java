@@ -82,11 +82,17 @@ public class EmployeeService implements IEmployeeService {
         if (wasActiveAdmin && !staysActiveAdmin && activeAdminCount() <= 1) {
             throw new IllegalStateException("This is the only active admin account, so it can't lose admin access.");
         }
-        // Keep the current password unless a new one was typed in
+        // Keep the current password unless a new one was typed in.
+        // A password set by an admin is temporary: the employee picks their own at the next sign-in.
         if (Helper.isBlank(employee.getPassword())) {
             employee.setPassword(existing.getPassword());
+            employee.setMustChangePassword(existing.isMustChangePassword());
         } else {
+            if (employee.getPassword().length() < 6) {
+                throw new IllegalArgumentException("The password must be at least 6 characters.");
+            }
             employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+            employee.setMustChangePassword(true);
         }
         if (employee.getEmpStatus() == null) {
             employee.setEmpStatus(existing.getEmpStatus());
@@ -153,8 +159,55 @@ public class EmployeeService implements IEmployeeService {
         if (Helper.isBlank(newPassword) || newPassword.length() < 6) {
             throw new IllegalArgumentException("The new password must be at least 6 characters.");
         }
+        if (passwordEncoder.matches(newPassword, employee.getPassword())) {
+            throw new IllegalArgumentException("Choose a password that is different from your current one.");
+        }
         employee.setPassword(passwordEncoder.encode(newPassword));
+        employee.setMustChangePassword(false);
         repository.save(employee);
+    }
+
+    public Employee findByEmail(String email) {
+        return Helper.isBlank(email) ? null : repository.findByEmailIgnoreCase(email.trim()).orElse(null);
+    }
+
+    /* Ban: the employee can no longer sign in, and is signed out straight away (see ActiveAccountFilter) */
+    public Employee ban(String empID, String byEmpID) {
+        Employee employee = repository.findById(empID).orElseThrow(() -> new NoSuchElementException("Employee was not found."));
+        if (empID.equals(byEmpID)) {
+            throw new IllegalStateException("You can't ban your own account.");
+        }
+        if (employee.getAccessLevel() == Employee.AccessLevel.ADMIN && employee.getEmpStatus() == Employee.EmpStatus.ACTIVE && activeAdminCount() <= 1) {
+            throw new IllegalStateException("This is the only active admin account, so it can't be banned.");
+        }
+        employee.setEmpStatus(Employee.EmpStatus.SUSPENDED);
+        return repository.save(employee);
+    }
+
+    public Employee unban(String empID) {
+        Employee employee = repository.findById(empID).orElseThrow(() -> new NoSuchElementException("Employee was not found."));
+        employee.setEmpStatus(Employee.EmpStatus.ACTIVE);
+        return repository.save(employee);
+    }
+
+    /* Gives the employee a one-time password (shown to the admin once); they must change it when they sign in */
+    public String resetPassword(String empID) {
+        Employee employee = repository.findById(empID).orElseThrow(() -> new NoSuchElementException("Employee was not found."));
+        String temporary = temporaryPassword();
+        employee.setPassword(passwordEncoder.encode(temporary));
+        employee.setMustChangePassword(true);
+        repository.save(employee);
+        return temporary;
+    }
+
+    private static final String LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
+
+    static String temporaryPassword() {
+        StringBuilder sb = new StringBuilder("Nexus-");
+        for (int i = 0; i < 4; i++) sb.append(RANDOM.nextInt(10));
+        for (int i = 0; i < 2; i++) sb.append(LETTERS.charAt(RANDOM.nextInt(LETTERS.length())));
+        return sb.toString();
     }
 
     public String hash(String rawPassword) {

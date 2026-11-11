@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Icon from '../components/Icons';
+import Logo from '../components/Logo';
 import { APP_NAME } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useBackendStatus } from '../hooks/useBackendStatus';
-import { StickyNote, TipNote } from '../components/ui';
+import { Field, Modal, StickyNote, TipNote } from '../components/ui';
+import { api } from '../services/api';
 
 
 export default function Login() {
-  const { user, login, sessionExpired } = useAuth();
+  const { user, login, sessionExpired, signOutReason } = useAuth();
+  const [forgot, setForgot] = useState(false);
   const navigate = useNavigate();
   const online = useBackendStatus();
   const [portal, setPortal] = useState('EMPLOYEE');
@@ -43,28 +46,28 @@ export default function Login() {
     <div className="login-page">
       <aside className="login-aside">
         <div className="row-flex">
-          <div className="brand-logo"><Icon name="boxes" size={20} /></div>
+          <div className="brand-logo"><Logo size={22} /></div>
           <div>
             <div className="brand-name">{APP_NAME}</div>
-            <div className="brand-sub">Wholesale Manager</div>
+            <div className="brand-sub">Wholesale &amp; spaza supply</div>
           </div>
         </div>
         <div>
-          <h1>Run the warehouse floor from one screen.</h1>
-          <p className="lead">Sales, stock, customers and staff for wholesale businesses.</p>
+          <h1>Stock, sales and trade accounts for your wholesale.</h1>
+          <p className="lead">Built for wholesalers who supply spaza shops, tuck shops and corner stores, from the counter to the store room.</p>
           <div className="login-notes" aria-hidden="true">
-            <StickyNote color="yellow" tilt={-3} pinned icon="cart" title="Quick sales" style={{ left: 0, top: 18 }}>
-              <p>Pick a customer, add products and the grand total works itself out.</p>
+            <StickyNote color="yellow" tilt={-3} pinned icon="cart" title="Counter sales" style={{ left: 0, top: 18 }}>
+              <p>Ring up a shop's order with VAT worked out. Cash, card, EFT or on account.</p>
             </StickyNote>
             <StickyNote color="pink" tilt={2.5} icon="bell" title="Stock alerts" style={{ left: 170, top: 0 }}>
               <p>Low and out-of-stock lines are flagged before they run out.</p>
             </StickyNote>
-            <StickyNote color="mint" tilt={-2} pinned icon="userClock" title="Your team" style={{ left: 120, top: 150 }}>
-              <p>Clock-ins, leave requests and approvals in one place.</p>
+            <StickyNote color="mint" tilt={-2} pinned icon="clipboard" title="Trade accounts" style={{ left: 120, top: 150 }}>
+              <p>Let regular shops buy now, pay later, and record what they pay off.</p>
             </StickyNote>
           </div>
         </div>
-        <div className="login-foot">© {new Date().getFullYear()} {APP_NAME} · Wholesale Manager</div>
+        <div className="login-foot">© {new Date().getFullYear()} {APP_NAME} · Wholesale &amp; spaza supply</div>
       </aside>
 
       <main className="login-main">
@@ -77,7 +80,13 @@ export default function Login() {
             <button type="button" className={portal === 'ADMIN' ? 'active' : ''} onClick={() => setPortal('ADMIN')}><Icon name="shield" size={15} /> Admin</button>
           </div>
 
-          {sessionExpired && online !== false && (
+          {signOutReason === 'SUSPENDED' && (
+            <div className="banner" style={{ borderRadius: 14, marginBottom: 14, background: 'var(--danger-50)', color: '#8a2a24' }}>
+              <Icon name="lock" size={16} />
+              <span>Your account has been suspended, so you were signed out. Please speak to an admin.</span>
+            </div>
+          )}
+          {sessionExpired && signOutReason !== 'SUSPENDED' && online !== false && (
             <div className="banner" style={{ borderRadius: 14, marginBottom: 14, background: 'var(--accent-50)', color: '#8a3320' }}>
               <Icon name="lock" size={16} />
               <span>Your session ended. Please sign in again.</span>
@@ -108,6 +117,7 @@ export default function Login() {
             </div>
             <label className="row-flex small" style={{ cursor: 'pointer', color: 'var(--text-2)' }}>
               <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Keep me signed in on this computer
+              <button type="button" className="link-btn" style={{ marginLeft: 'auto' }} onClick={(e) => { e.preventDefault(); setForgot(true); }}>Forgot password?</button>
             </label>
             {error && <div className="text-danger small row-flex"><Icon name="alert" size={15} /> {error}</div>}
             <button className="btn btn-primary btn-lg btn-block" disabled={busy || online === false}>
@@ -120,6 +130,55 @@ export default function Login() {
           </TipNote>
         </form>
       </main>
+      {forgot && <ForgotPassword initialEmail={email} onClose={() => setForgot(false)} />}
     </div>
+  );
+}
+
+/* "Forgot password?" – there is no email server, so the request goes to the admins,
+   who reset it and give the employee a temporary password */
+function ForgotPassword({ initialEmail, onClose }) {
+  const [email, setEmail] = useState(initialEmail || '');
+  const [sent, setSent] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const send = async (e) => {
+    e?.preventDefault();
+    if (!email.trim()) return setError('Enter the email you sign in with.');
+    setBusy(true);
+    setError('');
+    try {
+      const res = await api.auth.forgotPassword(email.trim());
+      setSent(res.message);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal title="Forgot your password?" subtitle="We'll ask an admin to reset it for you." onClose={onClose} size="sm"
+      footer={sent
+        ? <button className="btn btn-primary" onClick={onClose}>Back to sign in</button>
+        : <>
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={send} disabled={busy}>{busy ? 'Sending…' : 'Ask an admin'}</button>
+        </>}>
+      {sent ? (
+        <div className="stack" style={{ gap: 12 }}>
+          <div className="success-check"><Icon name="check" size={26} /></div>
+          <p style={{ textAlign: 'center' }}>{sent}</p>
+          <TipNote>When you sign in with the temporary password, you'll be asked to choose a new one straight away.</TipNote>
+        </div>
+      ) : (
+        <form onSubmit={send} className="stack" style={{ gap: 12 }}>
+          <Field label="Work email"><input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.co.za" autoFocus /></Field>
+          {error && <div className="text-danger small">{error}</div>}
+          <button type="submit" hidden />
+        </form>
+      )}
+    </Modal>
   );
 }

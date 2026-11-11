@@ -1,6 +1,6 @@
 ![UML Diagram](adp.png)
 
-# StockFlow – Wholesale Manager
+# Nexus – Wholesale Manager
 
 Resource management for a small wholesaler: products & stock, sales (point of sale), customers,
 suppliers and employees (leave + clock in/out), with notifications. Spring Boot + MySQL backend,

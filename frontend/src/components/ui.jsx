@@ -1,8 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from './Icons';
 import { categoryColor, categoryIcon, colorFor, initials } from '../utils/format';
 import { resizeImage } from '../utils/image';
 import { Sparkline } from './Charts';
+
+/* re-render when the admin's category icons/colours arrive or change */
+export function useCategoryVersion() {
+  const [, setV] = useState(0);
+  useEffect(() => {
+    const on = () => setV((v) => v + 1);
+    window.addEventListener('categories-changed', on);
+    return () => window.removeEventListener('categories-changed', on);
+  }, []);
+}
 
 /* People get initials; square avatars (products, suppliers) get a tinted icon tile */
 export function Avatar({ src, name, size = 36, square = false, icon = 'box', tint }) {
@@ -17,6 +28,7 @@ export function Avatar({ src, name, size = 36, square = false, icon = 'box', tin
 
 /* Product picture, or a tile tinted by category when no picture has been uploaded yet */
 export function ProductImage({ src, name, category, iconSize = 28, label = iconSize >= 24 }) {
+  useCategoryVersion();
   if (src) return <img src={src} alt={name} />;
   const c = categoryColor(category);
   return (
@@ -57,9 +69,11 @@ export function PageHeader({ title, subtitle, eyebrow, children }) {
 }
 
 /* trend: number (% change) – shows a green/red arrow chip. spark: array of numbers for a mini chart */
-export function StatCard({ icon, tone = 'blue', label, value, foot, trend, trendLabel, spark, sparkColor }) {
+/* to / state: makes the whole card a link (e.g. "Low stock" opens the restock list) */
+export function StatCard({ icon, tone = 'blue', label, value, foot, trend, trendLabel, spark, sparkColor, to, state }) {
+  const Tag = to ? Link : 'div';
   return (
-    <div className={`card stat-card${spark ? ' has-spark' : ''}`}>
+    <Tag {...(to ? { to, state, 'aria-label': `${label}: ${value}. Open` } : {})} className={`card stat-card${spark ? ' has-spark' : ''}${to ? ' is-link' : ''}`}>
       <div className={`stat-icon tone-${tone}`}><Icon name={icon} size={22} /></div>
       <div style={{ minWidth: 0 }}>
         <div className="stat-label">{label}</div>
@@ -68,7 +82,8 @@ export function StatCard({ icon, tone = 'blue', label, value, foot, trend, trend
         {foot && <div className="stat-foot">{foot}</div>}
       </div>
       {spark && <div className="stat-spark"><Sparkline data={spark} width={120} height={40} color={sparkColor || 'var(--ink)'} /></div>}
-    </div>
+      {to && <span className="stat-go" aria-hidden="true"><Icon name="arrowUpRight" size={11} /></span>}
+    </Tag>
   );
 }
 

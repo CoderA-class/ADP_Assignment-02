@@ -15,12 +15,14 @@ import java.time.LocalDateTime;
  * Notification.java
  * An in-app notification (low stock, inactive customer, leave request, clock-in, ...).
  * audience is "ADMIN" (all admins), "ALL" (everyone) or a specific employee ID.
+ * Author: David Daniel Sepkitt (240046935)
+ * Date: 11 November 2026
  */
 @Entity
 @Table(name = "notification")
 public class Notification {
 
-    public enum Type {LOW_STOCK, OUT_OF_STOCK, INACTIVE_CUSTOMER, LEAVE_REQUEST, LEAVE_DECISION, CLOCK_IN, CLOCK_OUT, NEW_SALE, SYSTEM}
+    public enum Type {LOW_STOCK, OUT_OF_STOCK, INACTIVE_CUSTOMER, LEAVE_REQUEST, LEAVE_DECISION, CLOCK_IN, CLOCK_OUT, NEW_SALE, STOCK_ALERT, STOCK_ALERT_UPDATE, PASSWORD_RESET, SYSTEM}
 
     public static final String AUDIENCE_ADMIN = "ADMIN";
     public static final String AUDIENCE_ALL = "ALL";
@@ -28,8 +30,9 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    /* stored as plain text (not a MySQL ENUM) so new notification types can be added later */
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 40, columnDefinition = "varchar(40)")
     private Type type;
     @Column(nullable = false)
     private String title;

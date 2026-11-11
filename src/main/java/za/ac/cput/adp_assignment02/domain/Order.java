@@ -36,8 +36,17 @@ public class Order {
     @Column(nullable = false)
     private LocalDate orderDate;
     private LocalDateTime orderTime;
+    /* totalAmount = subtotal + VAT. subtotal / vatAmount are empty on orders made before VAT was added */
     @Column(nullable = false)
     private double totalAmount;
+    private Double subtotal;
+    private Double vatAmount;
+    private Double vatRate;
+    /* CASH, CARD, EFT or ACCOUNT. Empty on orders made before payments were tracked (treated as paid) */
+    @Column(length = 20)
+    private String paymentMethod;
+    /* how much of the total has been paid so far (account sales start at 0) */
+    private Double amountPaid;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>(); /* * Default constructor required by JPA. */
 
@@ -118,6 +127,40 @@ public class Order {
 
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public Double getAmountPaid() { return amountPaid == null ? totalAmount : amountPaid; }
+    public void setAmountPaid(Double amountPaid) { this.amountPaid = amountPaid; }
+
+    /* what the customer still owes on this order */
+    public double getBalanceDue() {
+        return Math.max(0, Math.round((totalAmount - getAmountPaid()) * 100.0) / 100.0);
+    }
+
+    /* PAID, PARTIAL or UNPAID */
+    public String getPaymentStatus() {
+        double due = getBalanceDue();
+        if (due <= 0) return "PAID";
+        return getAmountPaid() > 0 ? "PARTIAL" : "UNPAID";
+    }
+
+    public Double getSubtotal() { return subtotal; }
+    public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
+    public Double getVatAmount() { return vatAmount; }
+    public void setVatAmount(Double vatAmount) { this.vatAmount = vatAmount; }
+    public Double getVatRate() { return vatRate; }
+    public void setVatRate(Double vatRate) { this.vatRate = vatRate; }
+
+    /* Sets subtotal, VAT and the grand total from a subtotal (amounts rounded to cents) */
+    public void applyVat(double subtotalAmount, double rate) {
+        double sub = Math.round(subtotalAmount * 100.0) / 100.0;
+        double vat = Math.round(sub * rate * 100.0) / 100.0;
+        this.subtotal = sub;
+        this.vatRate = rate;
+        this.vatAmount = vat;
+        this.totalAmount = Math.round((sub + vat) * 100.0) / 100.0;
     }
 
     public List<OrderItem> getOrderItems() {

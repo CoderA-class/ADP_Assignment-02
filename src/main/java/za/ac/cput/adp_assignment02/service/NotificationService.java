@@ -1,6 +1,7 @@
 package za.ac.cput.adp_assignment02.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +9,7 @@ import za.ac.cput.adp_assignment02.domain.Customer;
 import za.ac.cput.adp_assignment02.domain.Employee;
 import za.ac.cput.adp_assignment02.domain.Notification;
 import za.ac.cput.adp_assignment02.domain.Product;
+import za.ac.cput.adp_assignment02.event.StockLevelChangedEvent;
 import za.ac.cput.adp_assignment02.repository.CustomerRepository;
 import za.ac.cput.adp_assignment02.repository.NotificationRepository;
 import za.ac.cput.adp_assignment02.repository.ProductRepository;
@@ -29,15 +31,18 @@ public class NotificationService {
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
     private final int inactiveCustomerDays;
+    private final ApplicationEventPublisher events;
 
     public NotificationService(NotificationRepository repository,
                                ProductRepository productRepository,
                                CustomerRepository customerRepository,
-                               @Value("${app.notifications.inactive-customer-days:30}") int inactiveCustomerDays) {
+                               @Value("${app.notifications.inactive-customer-days:30}") int inactiveCustomerDays,
+                               ApplicationEventPublisher events) {
         this.repository = repository;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
         this.inactiveCustomerDays = inactiveCustomerDays;
+        this.events = events;
     }
 
     public Notification notify(Notification.Type type, String title, String message, String refId, String audience) {
@@ -55,6 +60,8 @@ public class NotificationService {
         if (product == null) {
             return;
         }
+        // lets open stock alerts close themselves once the product is restocked
+        events.publishEvent(new StockLevelChangedEvent(product));
         if (product.getQuantity() <= 0) {
             notifyOnce(Notification.Type.OUT_OF_STOCK, "Out of stock: " + product.getName(),
                     product.getName() + " is out of stock. Re-order from the supplier as soon as possible.",
@@ -100,6 +107,15 @@ public class NotificationService {
             }
         }
         return count;
+    }
+
+    /* Marks every unread notification of this type about this record as read (e.g. once a stock alert is dealt with) */
+    @Transactional
+    public void markHandled(Notification.Type type, String refId) {
+        for (Notification n : repository.findByTypeAndRefIdAndSeenFalse(type, refId)) {
+            n.setSeen(true);
+            repository.save(n);
+        }
     }
 
     public boolean delete(Long id) {

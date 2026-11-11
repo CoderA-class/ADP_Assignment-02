@@ -12,7 +12,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import za.ac.cput.adp_assignment02.repository.EmployeeRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 /*
@@ -49,6 +51,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JsonSecurityHandlers handlers,
                                                    EmployeeUserDetailsService userDetailsService,
+                                                   EmployeeRepository employeeRepository,
                                                    @Value("${app.security.remember-me-key:change-this-remember-me-key}") String rememberMeKey) throws Exception {
         http
                 .cors(Customizer.withDefaults())
@@ -56,17 +59,20 @@ public class SecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                // banned employees are signed out on their next request
+                .addFilterBefore(new ActiveAccountFilter(employeeRepository), AuthorizationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
                         // the React app itself, the health check and the login form are public
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico", "/error", "/health").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/forgot-password").permitAll()
 
                         // admin-only areas
                         .requestMatchers("/employees/**").hasRole("ADMIN")
                         .requestMatchers("/leave/all", "/leave/*/approve", "/leave/*/decline").hasRole("ADMIN")
                         .requestMatchers("/attendance/all").hasRole("ADMIN")
                         .requestMatchers("/notifications/run-checks").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/stock-alerts/*/acknowledge", "/stock-alerts/*/resolve").hasRole("ADMIN")
 
                         // employees can make sales and add a new customer while making a sale
                         .requestMatchers(HttpMethod.POST, "/orders/checkout", "/customers/create").hasAnyRole("ADMIN", "EMPLOYEE")

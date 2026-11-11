@@ -36,6 +36,21 @@ import java.util.NoSuchElementException;
 
 @Service
 public class OrderService implements IOrderService {
+
+    /* South African VAT, added on top of the selling prices */
+    public static final double VAT_RATE = 0.15;
+
+    /* how a sale can be paid; ACCOUNT = the customer pays later (sold on credit) */
+    public static final java.util.Set<String> PAYMENT_METHODS = java.util.Set.of("CASH", "CARD", "EFT", "ACCOUNT");
+
+    public static String cleanMethod(String method) {
+        String m = method == null || method.isBlank() ? "CASH" : method.trim().toUpperCase();
+        if (!PAYMENT_METHODS.contains(m)) {
+            throw new IllegalArgumentException("Choose how the customer is paying: cash, card, EFT or on account.");
+        }
+        return m;
+    }
+
     private final OrderRepository repository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
@@ -65,6 +80,7 @@ public class OrderService implements IOrderService {
         if (request.items() == null || request.items().isEmpty()) {
             throw new IllegalArgumentException("Add at least one product to the sale.");
         }
+        String paymentMethod = cleanMethod(request.paymentMethod());
         Customer customer = customerRepository.findById(request.customerId())
                 .orElseThrow(() -> new NoSuchElementException("The selected customer no longer exists."));
         Employee employee = Helper.isBlank(request.employeeId()) ? null : employeeRepository.findById(request.employeeId()).orElse(null);
@@ -114,9 +130,11 @@ public class OrderService implements IOrderService {
                 .setEmployeeName(employee == null ? null : employee.getFullName())
                 .setOrderDate(LocalDate.now())
                 .setOrderTime(LocalDateTime.now())
-                .setTotalAmount(round(total))
                 .setOrderItems(items)
                 .build();
+        order.applyVat(total, VAT_RATE);   // grand total = subtotal + 15% VAT
+        order.setPaymentMethod(paymentMethod);
+        order.setAmountPaid("ACCOUNT".equals(paymentMethod) ? 0.0 : order.getTotalAmount());
         Order saved = repository.save(order);
 
         customer.setLastPurchaseDate(LocalDate.now());
@@ -126,8 +144,9 @@ public class OrderService implements IOrderService {
             notificationService.checkStock(product);
         }
         notificationService.notify(Notification.Type.NEW_SALE, "New sale " + orderId,
-                String.format("R %.2f sale to %s%s.", saved.getTotalAmount(), customer.getFullName(),
-                        employee == null ? "" : " by " + employee.getFullName()),
+                String.format("R %.2f sale to %s%s%s.", saved.getTotalAmount(), customer.getFullName(),
+                        employee == null ? "" : " by " + employee.getFullName(),
+                        "ACCOUNT".equals(paymentMethod) ? " (on account – to be paid later)" : " (" + paymentMethod.toLowerCase() + ")"),
                 orderId, Notification.AUDIENCE_ADMIN);
         return saved;
     }
@@ -158,7 +177,7 @@ public class OrderService implements IOrderService {
                 }
                 item.setOrderId(order.getOrderId());
             }
-            order.setTotalAmount(round(order.calculateTotal()));
+            order.applyVat(order.calculateTotal(), VAT_RATE);
         }
         return repository.save(order);
     }
@@ -173,6 +192,11 @@ public class OrderService implements IOrderService {
         if (order == null || Helper.isBlank(order.getOrderId()) || !repository.existsById(order.getOrderId())) {
             throw new NoSuchElementException("Order was not found.");
         }
+        // payments are recorded through PaymentService, so keep what is already stored
+        repository.findById(order.getOrderId()).ifPresent(existing -> {
+            order.setPaymentMethod(existing.getPaymentMethod());
+            order.setAmountPaid(existing.getAmountPaid());
+        });
         return repository.save(order);
     }
 

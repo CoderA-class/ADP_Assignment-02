@@ -1,32 +1,41 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icon from './Icons';
-import { Avatar } from './ui';
+import Logo from './Logo';
+import { Avatar, Field } from './ui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { NOTIFICATION_META, useNotifications } from '../context/NotificationContext';
 import { useBackendStatus } from '../hooks/useBackendStatus';
 import { api } from '../services/api';
-import { fullName, minutesToHours, timeAgo } from '../utils/format';
+import { fullName, minutesToHours, registerCategories, timeAgo } from '../utils/format';
 
-export const APP_NAME = 'StockFlow';
+export const APP_NAME = 'Nexus';
 
 const NAV = [
-  { section: 'Overview', color: 'teal' },
+  { section: 'Overview', icon: 'grid', color: 'teal' },
   { to: '/', label: 'Dashboard', icon: 'dashboard', end: true, color: 'teal' },
   { to: '/pos', label: 'New Sale', icon: 'pos', color: 'coral' },
   { to: '/orders', label: 'Orders', icon: 'receipt', color: 'sky' },
-  { section: 'Inventory', color: 'amber' },
+  { section: 'Inventory', icon: 'warehouse', color: 'amber' },
   { to: '/products', label: 'Products & Stock', icon: 'boxes', badge: 'stock', color: 'amber' },
   { to: '/suppliers', label: 'Suppliers', icon: 'truck', color: 'peach' },
-  { section: 'People', color: 'lilac' },
+  { section: 'People', icon: 'users', color: 'lilac' },
   { to: '/customers', label: 'Customers', icon: 'users', color: 'lilac' },
   { to: '/employees', label: 'Employees', icon: 'badge', admin: true, color: 'pink' },
-  { section: 'Workplace', color: 'mint' },
+  { section: 'Workplace', icon: 'clipboard', color: 'mint' },
   { to: '/leave', label: 'Leave', adminLabel: 'Leave Requests', icon: 'calendar', badge: 'leave', color: 'mint' },
   { to: '/attendance', label: 'My Attendance', adminLabel: 'Attendance', icon: 'userClock', color: 'yellow' },
   { to: '/notifications', label: 'Notifications', icon: 'bell', badge: 'unread', color: 'slate' }
 ];
+
+/* the sidebar groups: each category with the pages that belong to it */
+const GROUPS = NAV.reduce((groups, item) => {
+  if (item.section) groups.push({ ...item, items: [] });
+  else groups[groups.length - 1].items.push(item);
+  return groups;
+}, []);
+const groupOf = (path) => GROUPS.find((g) => g.items.some((i) => i.to === path))?.section;
 
 const NAV_BY_PATH = Object.fromEntries(NAV.filter((n) => n.to).map((n) => [n.to, n]));
 NAV_BY_PATH['/profile'] = { icon: 'circleUser', color: 'teal' };
@@ -62,13 +71,26 @@ export default function Layout() {
 
   useEffect(() => { setMenuOpen(false); }, [location.pathname]);
 
+  // the admin's stock categories (icons + colours used for product pictures)
+  useEffect(() => { api.categories.all().then(registerCategories).catch(() => {}); }, []);
+
+  /* Overview is open when the app starts; after that, moving to a page opens its category */
+  const [openGroup, setOpenGroup] = useState('Overview');
+  const lastPath = useRef(location.pathname);
+  useEffect(() => {
+    if (lastPath.current === location.pathname) return;
+    lastPath.current = location.pathname;
+    const g = groupOf(location.pathname);
+    if (g) setOpenGroup(g);
+  }, [location.pathname]);
+
   /* tint the page background to match the colour of the section you're in */
   useEffect(() => {
     document.body.dataset.tint = NAV_BY_PATH[location.pathname]?.color || 'teal';
     return () => { delete document.body.dataset.tint; };
   }, [location.pathname]);
 
-  const lowStockAlerts = items.filter((n) => !n.seen && (n.type === 'LOW_STOCK' || n.type === 'OUT_OF_STOCK')).length;
+  const lowStockAlerts = items.filter((n) => !n.seen && ['LOW_STOCK', 'OUT_OF_STOCK', 'STOCK_ALERT', 'STOCK_ALERT_UPDATE'].includes(n.type)).length;
   const leaveAlerts = items.filter((n) => !n.seen && (n.type === 'LEAVE_REQUEST' || n.type === 'LEAVE_DECISION')).length;
   const badges = { stock: lowStockAlerts, leave: leaveAlerts, unread };
 
@@ -76,22 +98,40 @@ export default function Layout() {
     <div className="app-shell">
       <aside className={`sidebar${menuOpen ? ' open' : ''}`}>
         <div className="sidebar-brand">
-          <div className="brand-logo"><Icon name="boxes" size={20} /></div>
+          <div className="brand-logo"><Logo size={22} /></div>
           <div>
             <div className="brand-name">{APP_NAME}</div>
-            <div className="brand-sub">Wholesale Manager</div>
+            <div className="brand-sub">Wholesale &amp; spaza supply</div>
           </div>
         </div>
         <nav className="sidebar-nav">
-          {NAV.filter((n) => !n.admin || isAdmin).map((item, i) => item.section ? (
-            <div key={`s${i}`} className={`nav-section s-${item.color}`}>{item.section}</div>
-          ) : (
-            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `nav-link n-${item.color}${isActive ? ' active' : ''}`}>
-              <span className={`nav-ico c-${item.color}`}><Icon name={item.icon} size={15} /></span>
-              <span>{isAdmin && item.adminLabel ? item.adminLabel : item.label}</span>
-              {item.badge && badges[item.badge] > 0 && <span className="nav-badge">{badges[item.badge]}</span>}
-            </NavLink>
-          ))}
+          {GROUPS.map((group) => {
+            const items = group.items.filter((n) => !n.admin || isAdmin);
+            const open = openGroup === group.section;
+            const here = groupOf(location.pathname) === group.section;
+            const count = items.reduce((sum, i) => sum + (i.badge ? badges[i.badge] || 0 : 0), 0);
+            return (
+              <div key={group.section} className={`nav-group g-${group.color}${open ? ' open' : ''}${here ? ' here' : ''}`}>
+                <button type="button" className="nav-group-head" aria-expanded={open} onClick={() => setOpenGroup(open ? null : group.section)}>
+                  <span className="nav-group-ico"><Icon name={group.icon} size={15} /></span>
+                  <span className="nav-group-name">{group.section}</span>
+                  {!open && count > 0 && <span className="nav-badge">{count}</span>}
+                  <span className="nav-group-caret"><Icon name="chevronDown" size={12} /></span>
+                </button>
+                <div className="nav-group-body">
+                  <div className="nav-group-inner">
+                    {items.map((item) => (
+                      <NavLink key={item.to} to={item.to} end={item.end} tabIndex={open ? 0 : -1} className={({ isActive }) => `nav-link n-${item.color}${isActive ? ' active' : ''}`}>
+                        <span className={`nav-ico c-${item.color}`}><Icon name={item.icon} size={14} /></span>
+                        <span>{isAdmin && item.adminLabel ? item.adminLabel : item.label}</span>
+                        {item.badge && badges[item.badge] > 0 && <span className="nav-badge">{badges[item.badge]}</span>}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-footer">
           <NavLink to="/profile" className="sidebar-user">
@@ -110,8 +150,8 @@ export default function Layout() {
           <button className="icon-btn menu-toggle" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Icon name="menu" /></button>
           <div className="topbar-title">
             <div>
-              <div>{TITLES[location.pathname] || APP_NAME}</div>
               <div className="topbar-sub hide-sm">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+              <div>{TITLES[location.pathname] || APP_NAME}</div>
             </div>
           </div>
           <div className="topbar-spacer" />
@@ -128,6 +168,7 @@ export default function Layout() {
         <main className="page">
           <Outlet />
         </main>
+        {user?.mustChangePassword && <ForcePasswordChange />}
       </div>
     </div>
   );
@@ -249,13 +290,15 @@ function UserMenu() {
   useClickOutside(ref, () => setOpen(false));
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <button className="row-flex" style={{ border: 0, background: 'none', cursor: 'pointer', padding: 0 }} onClick={() => setOpen((o) => !o)} aria-label="Account menu">
-        <Avatar src={user?.imageUrl} name={fullName(user)} size={36} />
-        <div className="hide-sm" style={{ textAlign: 'left', lineHeight: 1.2 }}>
-          <div style={{ fontWeight: 800, fontSize: 13 }}>{fullName(user)}</div>
-          <div className="muted" style={{ fontSize: 11 }}>{isAdmin ? 'Admin' : 'Employee'}</div>
-        </div>
-        <Icon name="chevronDown" size={16} className="hide-sm" />
+      <button className="user-chip" onClick={() => setOpen((o) => !o)} aria-label="Account menu">
+        <span className="user-chip-avatar"><Avatar src={user?.imageUrl} name={fullName(user)} size={40} /></span>
+        <span className="user-chip-pill hide-sm">
+          <span className="user-chip-text">
+            <span className="user-chip-label">{isAdmin ? 'Administrator' : user?.role || 'Employee'}</span>
+            <span className="user-chip-name">{fullName(user)}</span>
+          </span>
+          <span className="user-chip-caret"><Icon name="chevronDown" size={13} /></span>
+        </span>
       </button>
       {open && (
         <div className="dropdown menu">
@@ -265,6 +308,55 @@ function UserMenu() {
           <button className="menu-item danger" onClick={async () => { await logout(); navigate('/login'); }}><Icon name="logout" size={16} /> Log out</button>
         </div>
       )}
+    </div>
+  );
+}
+
+/* After an admin resets someone's password they sign in with a temporary one – and must choose their own first */
+function ForcePasswordChange() {
+  const { user, updateUser, logout } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
+  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setPw((p) => ({ ...p, [k]: e.target.value }));
+
+  const save = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (pw.next.length < 6) return setError('Use at least 6 characters for your new password.');
+    if (pw.next !== pw.confirm) return setError("The new passwords don't match.");
+    setBusy(true);
+    try {
+      await api.auth.changePassword(pw.current, pw.next);
+      updateUser({ ...user, mustChangePassword: false });
+      toast.success('Password updated', 'You are all set. Welcome back!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="overlay">
+      <form className="modal sm" onSubmit={save} role="dialog" aria-modal="true" aria-label="Choose a new password">
+        <div className="modal-header"><div>
+          <h2>Choose a new password</h2>
+          <p>An admin reset your password. Enter the temporary password they gave you, then pick your own.</p>
+        </div></div>
+        <div className="modal-body stack" style={{ gap: 14 }}>
+          <Field label="Temporary password"><input className="input" type="password" autoComplete="current-password" value={pw.current} onChange={set('current')} autoFocus /></Field>
+          <Field label="New password" hint="At least 6 characters"><input className="input" type="password" autoComplete="new-password" value={pw.next} onChange={set('next')} /></Field>
+          <Field label="Confirm new password"><input className="input" type="password" autoComplete="new-password" value={pw.confirm} onChange={set('confirm')} /></Field>
+          {error && <div className="text-danger small row-flex"><Icon name="alert" size={14} /> {error}</div>}
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" onClick={async () => { await logout(); navigate('/login'); }}>Sign out</button>
+          <button className="btn btn-primary" disabled={busy}>{busy ? 'Saving…' : 'Save new password'}</button>
+        </div>
+      </form>
     </div>
   );
 }
