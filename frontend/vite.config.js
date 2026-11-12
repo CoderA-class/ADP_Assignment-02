@@ -12,7 +12,10 @@ import react from '@vitejs/plugin-react';
  * http://localhost:8080/adp-assignment/
  */
 const BACKEND = process.env.BACKEND_URL || 'http://localhost:8080';
-const API_PATHS = ['health', 'auth', 'customers', 'employees', 'products', 'suppliers', 'orders', 'order-items', 'leave', 'attendance', 'notifications'];
+// Every backend controller must be listed here, otherwise `npm run dev` answers that path with
+// index.html instead of the JSON from Spring Boot and the dashboard crashes after login.
+const API_PATHS = ['health', 'auth', 'customers', 'employees', 'products', 'suppliers', 'orders', 'order-items',
+  'leave', 'attendance', 'notifications', 'categories', 'stock-alerts', 'payments'];
 
 const proxy = Object.fromEntries(API_PATHS.map((p) => [`/adp-assignment/${p}`, {
   target: BACKEND,

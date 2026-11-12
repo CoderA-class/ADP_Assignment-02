@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icon from './Icons';
 import Logo from './Logo';
+import ErrorBoundary from './ErrorBoundary';
 import { Avatar, Field } from './ui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -72,7 +73,7 @@ export default function Layout() {
   useEffect(() => { setMenuOpen(false); }, [location.pathname]);
 
   // the admin's stock categories (icons + colours used for product pictures)
-  useEffect(() => { api.categories.all().then(registerCategories).catch(() => {}); }, []);
+  useEffect(() => { api.categories.all().then((list) => registerCategories(Array.isArray(list) ? list : [])).catch(() => {}); }, []);
 
   /* Overview is open when the app starts; after that, moving to a page opens its category */
   const [openGroup, setOpenGroup] = useState('Overview');
@@ -166,7 +167,7 @@ export default function Layout() {
           </div>
         )}
         <main className="page">
-          <Outlet />
+          <ErrorBoundary resetKey={location.pathname}><Outlet /></ErrorBoundary>
         </main>
         {user?.mustChangePassword && <ForcePasswordChange />}
       </div>

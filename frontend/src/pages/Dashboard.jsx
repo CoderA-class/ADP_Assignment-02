@@ -19,7 +19,8 @@ export default function Dashboard() {
       isAdmin ? api.employees.all() : Promise.resolve([]),
       api.stockAlerts.list().catch(() => [])
     ]);
-    return { products, customers, orders, leave, employees, alerts };
+    const list = (x) => (Array.isArray(x) ? x : []);
+    return { products: list(products), customers: list(customers), orders: list(orders), leave: list(leave), employees: list(employees), alerts: list(alerts) };
   }, [isAdmin, user.empID]);
 
   const stats = useMemo(() => {

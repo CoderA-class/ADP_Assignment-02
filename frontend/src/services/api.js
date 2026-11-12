@@ -69,6 +69,14 @@ export async function request(path, { method = 'GET', body, query, form, retried
     try { data = JSON.parse(text); } catch { data = text; }
   }
 
+  // An API call should never get a web page back. If it does, the request didn't reach Spring Boot
+  // (e.g. the Vite dev proxy is missing that path) – fail clearly instead of crashing the page.
+  const contentType = response.headers.get('content-type') || '';
+  if (response.ok && (contentType.includes('text/html') || (typeof data === 'string' && data.trim().startsWith('<')))) {
+    throw new ApiError('The server sent back a web page instead of data for ' + path
+      + '. Make sure the Spring Boot backend is running and restart the frontend (npm run dev).', 502, true);
+  }
+
   if (!response.ok) {
     // The CSRF token rotates after login/logout – fetch a fresh one and try once more
     if (response.status === 403 && data && data.code === 'CSRF' && !retried) {
